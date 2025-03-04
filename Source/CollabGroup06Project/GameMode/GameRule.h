@@ -6,7 +6,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameRuleCompleteSignature, class UGameRule*, rule);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Abstract, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class COLLABGROUP06PROJECT_API UGameRule : public UActorComponent
 {
 	GENERATED_BODY()
