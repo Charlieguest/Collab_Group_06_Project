@@ -4,6 +4,7 @@
 #include "GameFramework/GameMode.h"
 #include "CustomGameMode.generated.h"
 
+class APlayerCharController;
 class UGameRule;
 
 UCLASS()
@@ -35,11 +36,8 @@ protected:
 	virtual bool ReadyToStartMatch_Implementation() override;
 	virtual bool ReadyToEndMatch_Implementation() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TArray<TObjectPtr<AController>> _PlayerControllers;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=MatchManagement)
-	int _CountDownTimer;
+	int _CountDownTimer = 3;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=MatchManagement)
 	int _GameRulesLeft;
@@ -49,8 +47,9 @@ protected:
 
 	FTimerHandle _TimerDecreaseCountdown;
 
-	//TODO: PLAYER CONTROL REFERENCE
-	//TObjectPtr<playercontroller blah blah>
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<TObjectPtr<AController>> _PlayerControllers;
+	
+	TObjectPtr<APlayerCharController> _PlayerCharController;
 	
 };
