@@ -1,6 +1,7 @@
 ﻿#include "PlayerCharacter.h"
 
 #include "InputActionValue.h"
+#include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -19,11 +20,17 @@ APlayerCharacter::APlayerCharacter()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GappleAttachPoint"));
+	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
+	
 }
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
@@ -70,7 +77,12 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	Super::Jump();
 }
 
+void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::PrimaryInteract_Implementation(Instance);
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Emerald, FString::Printf(TEXT("Ched")));
+}
+
 void APlayerCharacter::Init_Implementation()
 {
 }
-

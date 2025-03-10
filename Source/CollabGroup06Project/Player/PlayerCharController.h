@@ -39,6 +39,8 @@ public:
 
 	void CAM_Look(const FInputActionValue& Instance);
 
+	void CAM_PrimaryInteract(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 
@@ -50,5 +52,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UInputAssets> _InputActions;
+
+	
 
 };

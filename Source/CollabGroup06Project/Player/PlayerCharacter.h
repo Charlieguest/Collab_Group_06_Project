@@ -7,8 +7,10 @@
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
-struct FInputActionValue;
 class UCameraComponent;
+class AGrappleGun;
+struct FInputActionValue;
+
 
 UCLASS()
 class COLLABGROUP06PROJECT_API APlayerCharacter : public ACharacter, public IInputActionable
@@ -30,6 +32,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
 
@@ -44,4 +48,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AGrappleGun> _GrappleGun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> _SpawnedGrabbleGun;
 };

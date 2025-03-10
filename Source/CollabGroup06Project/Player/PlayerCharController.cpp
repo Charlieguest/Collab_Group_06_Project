@@ -35,6 +35,7 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Jump);
 			PEI->BindAction(_InputActions->Move.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Move);
 			PEI->BindAction(_InputActions->Look.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Look);
+			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
 		}
 	}
 }
@@ -92,5 +93,13 @@ void APlayerCharController::CAM_Look(const FInputActionValue& Instance)
 	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
 	{
 		IInputActionable::Execute_Look(_PlayerPawn, Instance);
+	}
+}
+
+void APlayerCharController::CAM_PrimaryInteract(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_PrimaryInteract(_PlayerPawn, Instance);
 	}
 }
