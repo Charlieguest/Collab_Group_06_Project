@@ -30,6 +30,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	virtual void ToggleCamera_Implementation(const FInputActionValue& Instance) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
 
@@ -41,7 +43,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	float _CameraArmLengthDef = 300.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	float _CameraArmLengthCam = -100.0f;
 
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	bool bIsCameraOpen = false;
 };
