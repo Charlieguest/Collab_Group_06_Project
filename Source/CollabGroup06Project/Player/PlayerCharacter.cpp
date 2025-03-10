@@ -1,6 +1,7 @@
 ﻿#include "PlayerCharacter.h"
 
 #include "InputActionValue.h"
+#include "CollabGroup06Project/PlayerTools/GrappleGun.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -21,15 +22,20 @@ APlayerCharacter::APlayerCharacter()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GappleAttachPoint"));
+	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
 	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = this;
+	
+	_SpawnedGrabbleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	_SpawnedGrabbleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 	
 }
 
