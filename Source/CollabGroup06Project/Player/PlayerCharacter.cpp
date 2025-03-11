@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -86,7 +87,12 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
 	IInputActionable::PrimaryInteract_Implementation(Instance);
-	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Emerald, FString::Printf(TEXT("Ched")));
+
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrabbleGun, UFireable::StaticClass()))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Input Fires")));
+		bool hasFired = IFireable::Execute_Fire(_SpawnedGrabbleGun);
+	}
 }
 
 void APlayerCharacter::Init_Implementation()
