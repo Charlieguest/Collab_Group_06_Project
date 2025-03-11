@@ -3,7 +3,7 @@
 
 #include "LaunchPad.h"
 
-#include "Components/BoxComponent.h"
+
 
 // Sets default values
 ALaunchPad::ALaunchPad()
@@ -34,7 +34,7 @@ UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHi
 	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 	if (OtherCharacter != nullptr)
 	{
-		OtherCharacter->LaunchCharacter(FVector(0,0,1000), false, true);
+		OtherCharacter->LaunchCharacter(FVector(0,0,M_LaunchVelocity), XYOverride, ZOverride);
 	}
 	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.f, FColor::Red, *FString::Printf(TEXT("On Component Overlap Begin!")));
 }
