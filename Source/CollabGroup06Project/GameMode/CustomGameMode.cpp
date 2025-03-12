@@ -1,6 +1,9 @@
 ﻿#include "CustomGameMode.h"
 
 #include "GameRule.h"
+#include "CollabGroup06Project/Interfaces/MatchStateHandler.h"
+#include "CollabGroup06Project/Player/PlayerCharController.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ACustomGameMode::ACustomGameMode()
 {
@@ -9,6 +12,7 @@ ACustomGameMode::ACustomGameMode()
 
 void ACustomGameMode::Logout(AController* Exiting)
 {
+	_PlayerControllers.Remove(Exiting);
 	Super::Logout(Exiting);
 }
 
@@ -60,14 +64,26 @@ void ACustomGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	//TODO: INITIALISE PLAYER CONTROLLER
+	for(AController* controller : _PlayerControllers)
+	{
+		if(UKismetSystemLibrary::DoesImplementInterface(controller, UMatchStateHandler::StaticClass()))
+		{
+			IMatchStateHandler::Execute_Handle_MatchStarted(controller);
+		}
+	}
 }
 
 void ACustomGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
 
-	//TODO: INITIALISE PLAYER CONTROLLER
+	for(AController* controller : _PlayerControllers)
+	{
+		if(UKismetSystemLibrary::DoesImplementInterface(controller, UMatchStateHandler::StaticClass()))
+		{
+			IMatchStateHandler::Execute_Handle_MatchEnded(controller);
+		}
+	}
 }
 
 void ACustomGameMode::OnMatchStateSet()
@@ -111,6 +127,14 @@ void ACustomGameMode::Handle_GameRuleCompleted(UGameRule* rule)
 void ACustomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	_PlayerControllers.AddUnique(NewPlayer);
+	if(APlayerCharController* castedPC = Cast<APlayerCharController>(NewPlayer))
+	{
+		//TODO: Bind to any relevant events
+		castedPC->Init();
+		_PlayerCharController = castedPC;
+	}
 }
 
 //Below are checker functions
