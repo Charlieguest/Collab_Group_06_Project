@@ -56,5 +56,5 @@ public:
 	TSubclassOf<AGrappleGun> _GrappleGun;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<AActor> _SpawnedGrabbleGun;
+	TObjectPtr<AActor> _SpawnedGrappleGun;
 };

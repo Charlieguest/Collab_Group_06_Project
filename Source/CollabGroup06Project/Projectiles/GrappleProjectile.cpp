@@ -5,7 +5,10 @@
 AGrappleProjectile::AGrappleProjectile()
 {
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(3.0f);
+	CollisionComp->InitSphereRadius(6.0f);
+	CollisionComp->SetSimulatePhysics(true);
+	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	CollisionComp->OnComponentHit.AddDynamic(this, &AGrappleProjectile::OnHit);
 
 	//Players can't walk on it
@@ -26,5 +29,7 @@ void AGrappleProjectile::BeginPlay()
 void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
+	CollisionComp->SetSimulatePhysics(false);
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Test Collision")));
 }

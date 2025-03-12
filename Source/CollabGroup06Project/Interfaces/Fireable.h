@@ -16,5 +16,5 @@ class COLLABGROUP06PROJECT_API IFireable
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	bool Fire();
+	bool Fire(FVector forward);
 };

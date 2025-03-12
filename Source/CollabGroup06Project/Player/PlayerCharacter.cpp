@@ -35,8 +35,8 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 	
-	_SpawnedGrabbleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
-	_SpawnedGrabbleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	_SpawnedGrappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	_SpawnedGrappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 	
 }
 
@@ -51,12 +51,14 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 		{
 			const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
 			AddMovementInput(Direction, MoveValue.Y);
+			GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 		}
 
 		if(MoveValue.X != 0.0f)
 		{
 			const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
 			AddMovementInput(Direction, MoveValue.X);
+			GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 		}
 	}
 }
@@ -88,10 +90,9 @@ void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& I
 {
 	IInputActionable::PrimaryInteract_Implementation(Instance);
 
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrabbleGun, UFireable::StaticClass()))
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Input Fires")));
-		bool hasFired = IFireable::Execute_Fire(_SpawnedGrabbleGun);
+		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
 	}
 }
 

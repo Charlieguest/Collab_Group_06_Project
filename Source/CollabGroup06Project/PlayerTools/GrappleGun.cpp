@@ -2,6 +2,7 @@
 
 #include "CollabGroup06Project/Projectiles/GrappleProjectile.h"
 #include "Components/ArrowComponent.h"
+#include "Components/SphereComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponProj, Display, All);
 
@@ -14,21 +15,25 @@ AGrappleGun::AGrappleGun()
 	_BerryAttachPoint->SetupAttachment(_Root);
 }
 
-bool AGrappleGun::Fire_Implementation()
+bool AGrappleGun::Fire_Implementation(FVector Forward)
 {
 	UWorld* const world = GetWorld();
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Function Fires")));
 
-	if (world == nullptr || _ProjectileRef == nullptr) {  return false; }
-
+	if (world == nullptr || _ProjectileRef == nullptr || _HasFired == true) {  return false; }
+	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = GetOwner();
 	SpawnParameters.Instigator = GetInstigator();
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-	world->SpawnActor(_ProjectileRef, &_BerryAttachPoint->GetComponentTransform(), SpawnParameters);
+	AActor* grapple = world->SpawnActor(_ProjectileRef, &_BerryAttachPoint->GetComponentTransform(), SpawnParameters);
+	AGrappleProjectile* GrappleProjectile = Cast<AGrappleProjectile>(grapple);
+
+	GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
 	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Thing Spawns")));
+	_FireTime = 1;
+	_HasFired = true;
+	GetWorld()->GetTimerManager().SetTimer(_FireStopTimer, this, &AGrappleGun::FireStopCountdown, 1.0f, false);
 	
 	return true;
 }
@@ -36,4 +41,18 @@ bool AGrappleGun::Fire_Implementation()
 void AGrappleGun::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AGrappleGun::FireStopCountdown()
+{
+	_FireTime--;
+	
+	if(_FireTime == 0)
+	{
+		_HasFired = false;	
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(_FireStopTimer, this, &AGrappleGun::FireStopCountdown, 1.0f, false);
+	}
 }
