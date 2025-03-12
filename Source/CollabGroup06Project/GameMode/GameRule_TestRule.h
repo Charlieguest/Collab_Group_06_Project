@@ -19,6 +19,6 @@ protected:
 	UFUNCTION()
 	void DecreaseCountdown();
 
-	int _CountDownTimer = 2;
+	int _CountDownTimer = 200;
 	FTimerHandle _TimerDecreaseCountdown;
 };
