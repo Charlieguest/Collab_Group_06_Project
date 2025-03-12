@@ -38,6 +38,8 @@ public:
 	void CAM_Move(const FInputActionValue& Instance);
 
 	void CAM_Look(const FInputActionValue& Instance);
+	
+	void CAM_CameraToggle(const FInputActionValue& Instance);
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;

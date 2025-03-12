@@ -28,47 +28,72 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
-	if(Controller != nullptr)
-	{
-		const FVector2d MoveValue = Instance.Get<FVector2d>();
-		const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
-
-		if(MoveValue.Y != 0.0f)
+	if (!bIsCameraOpen)
+	{	
+		if(Controller != nullptr)
 		{
-			const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
-			AddMovementInput(Direction, MoveValue.Y);
-		}
+			const FVector2d MoveValue = Instance.Get<FVector2d>();
+			const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
 
-		if(MoveValue.X != 0.0f)
-		{
-			const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
-			AddMovementInput(Direction, MoveValue.X);
+			if(MoveValue.Y != 0.0f)
+			{
+				const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+				AddMovementInput(Direction, MoveValue.Y);
+			}
+
+			if(MoveValue.X != 0.0f)
+			{
+				const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+				AddMovementInput(Direction, MoveValue.X);
+			}
 		}
 	}
 }
 
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 {
-	if(Controller != nullptr)
+	if (!bIsCameraOpen)
 	{
-		const FVector2d AxisValue = Instance.Get<FVector2d>();
-
-		if(AxisValue.Y != 0.0f)
+		if(Controller != nullptr)
 		{
-			AddControllerPitchInput(AxisValue.Y);
-		}
+			const FVector2d AxisValue = Instance.Get<FVector2d>();
 
-		if(AxisValue.X != 0.0f)
-		{
-			AddControllerYawInput(AxisValue.X);
+			if(AxisValue.Y != 0.0f)
+			{
+				AddControllerPitchInput(AxisValue.Y);
+			}
+
+			if(AxisValue.X != 0.0f)
+			{
+				AddControllerYawInput(AxisValue.X);
+			}
+		
 		}
 	}
+	
 }
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 {
-	Super::Jump();
+	if (!bIsCameraOpen)
+	{
+		Super::Jump();
+	}
 }
+
+void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
+{
+	bIsCameraOpen = !bIsCameraOpen;
+	if (bIsCameraOpen)
+	{
+		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthCam;
+	}
+	else
+	{
+		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
+	}
+}
+
 
 void APlayerCharacter::Init_Implementation()
 {
