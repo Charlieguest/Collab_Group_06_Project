@@ -41,6 +41,10 @@ public:
 	
 	void CAM_CameraToggle(const FInputActionValue& Instance);
 
+	void CAM_TakePhoto(const FInputActionValue& Instance);
+
+	void CAM_Scan(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 

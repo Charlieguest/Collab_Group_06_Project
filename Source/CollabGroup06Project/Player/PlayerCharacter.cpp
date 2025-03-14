@@ -1,9 +1,12 @@
 ﻿#include "PlayerCharacter.h"
 
 #include "InputActionValue.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetRenderingLibrary.h"
+#include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -24,7 +27,18 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (ScreenshotClass)
+	{
+		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
+		if (ScreenshotWidgetInstance)
+		{
+			ScreenshotWidgetInstance->AddToViewport();
+			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
 }
+
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
@@ -132,6 +146,10 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 	bIsCameraOpen = !bIsCameraOpen;
 	if (bIsCameraOpen)
 	{
+		if (ScreenshotWidgetInstance)
+		{
+			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+		}
 		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
 		CurrentLocation.Z =+ 200.0f;
 		
@@ -145,7 +163,67 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 		
 		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
 		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-		
+		if (ScreenshotWidgetInstance)
+		{
+			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instance)
+{
+	if(bIsCameraOpen)
+	{
+		CaptureScreenshot();
+		UpdateUI();
+	}
+}
+
+void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::Scan_Implementation(Instance);
+}
+
+
+void APlayerCharacter::CaptureScreenshot()
+{
+	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
+	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
+	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
+}
+
+UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
+{
+	FString ScreenshotPath = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
+
+	if (!FPaths::FileExists(ScreenshotPath))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Screenshot not found : %s"), *ScreenshotPath);
+		return nullptr;
+	}
+
+	// Load image as texture
+	UE_LOG(LogTemp, Warning, TEXT("Importing text"));
+	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, ScreenshotPath);
+}
+
+void APlayerCharacter::UpdateUI()
+{
+	if (ScreenshotWidgetInstance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
+		UDispalyScreenshots* TestUI = Cast<UDispalyScreenshots>(ScreenshotWidgetInstance);
+		if (TestUI)
+		{
+			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
+			UE_LOG(LogTemp, Warning, TEXT("Loading texture"));
+
+			if (ScreenshotTexture)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Image being changed"));
+				TestUI->SetImage(ScreenshotTexture);
+			}
+		}
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "CollabGroup06Project/Interfaces/InputActionable.h"
 #include "GameFramework/Character.h"
+#include "Blueprint/UserWidget.h"
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -30,7 +31,24 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	//Camera mode functions
+
 	virtual void ToggleCamera_Implementation(const FInputActionValue& Instance) override;
+	
+	virtual void TakePhoto_Implementation(const FInputActionValue& Instance) override;
+
+	virtual void Scan_Implementation(const FInputActionValue& Instance) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void CaptureScreenshot();
+
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	UTexture2D* LoadScreenshotAsTexture();
+
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void UpdateUI();
+
+	//Components
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
@@ -58,4 +76,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	bool bToggleInput = false;
+
+	//Testing UI for screenshotting
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> ScreenshotClass;
+	UUserWidget* ScreenshotWidgetInstance;
 };
