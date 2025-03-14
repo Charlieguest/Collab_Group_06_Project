@@ -28,7 +28,7 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
-	if (!bIsCameraOpen)
+	if (!bToggleInput)
 	{	
 		if(Controller != nullptr)
 		{
@@ -37,22 +37,64 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 
 			if(MoveValue.Y != 0.0f)
 			{
-				const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
-				AddMovementInput(Direction, MoveValue.Y);
+				if (bIsCameraOpen)
+				{
+					float Min = -200.0f;
+					float Max = 200.0f;
+					
+					FVector NewLocation = _CameraSpringArmComponent->GetRelativeLocation();
+					NewLocation.Y += MoveValue.Y * 10.0f;
+					NewLocation.Y = FMath::Clamp(NewLocation.Y, Min, Max);
+					_CameraSpringArmComponent->SetRelativeLocation(NewLocation);
+					
+				}
+				else
+				{
+					const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+					AddMovementInput(Direction, MoveValue.Y);
+				}
+				
 			}
 
 			if(MoveValue.X != 0.0f)
 			{
-				const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
-				AddMovementInput(Direction, MoveValue.X);
+				if (bIsCameraOpen)
+				{
+					float Min = -200.0f;
+					float Max = 200.0f;
+					
+					FVector NewLocation = _CameraSpringArmComponent->GetRelativeLocation();
+					NewLocation.X += MoveValue.X * 10.0f;
+					NewLocation.X = FMath::Clamp(NewLocation.X, Min, Max);
+					_CameraSpringArmComponent->SetRelativeLocation(NewLocation);
+					
+				}
+				
+				else
+				{
+					const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+					AddMovementInput(Direction, MoveValue.X);
+				}
 			}
 		}
 	}
+	
 }
 
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 {
-	if (!bIsCameraOpen)
+	if (bIsCameraOpen)
+	{
+		
+		if(Controller != nullptr)
+		{
+			FRotator CurrentRotation = Controller->GetControlRotation();
+			FRotator TargetRotation = FRotator(0.0f, CurrentRotation.Yaw, 0.0f);
+			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 5.0f);
+			Controller->SetControlRotation(NewRotation);
+		}
+	}
+	else
 	{
 		if(Controller != nullptr)
 		{
@@ -75,7 +117,11 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 {
-	if (!bIsCameraOpen)
+	if (bIsCameraOpen)
+	{
+		
+	}
+	else
 	{
 		Super::Jump();
 	}
@@ -86,11 +132,20 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 	bIsCameraOpen = !bIsCameraOpen;
 	if (bIsCameraOpen)
 	{
+		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
+		CurrentLocation.Z =+ 200.0f;
+		
 		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthCam;
+		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		
 	}
 	else
 	{
+		FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+		
 		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
+		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		
 	}
 }
 

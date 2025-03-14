@@ -53,6 +53,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
 	bool bIsCameraOpen = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	bool bToggleInput = false;
 };
