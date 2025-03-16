@@ -3,6 +3,9 @@
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
+#include "Components/ArrowComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -19,6 +22,9 @@ APlayerCharacter::APlayerCharacter()
 	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
+
+	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
+	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -37,6 +43,19 @@ void APlayerCharacter::BeginPlay()
 			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = this;
+
+	_SpawnedGrappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	_SpawnedGrappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+	AGrappleGun* grappleGun = Cast<AGrappleGun>(_SpawnedGrappleGun);
+	grappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+	grappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+	grappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	
 }
 
 
@@ -66,6 +85,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 				{
 					const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
 					AddMovementInput(Direction, MoveValue.Y);
+					GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 				}
 				
 			}
@@ -88,6 +108,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 				{
 					const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
 					AddMovementInput(Direction, MoveValue.X);
+					GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 				}
 			}
 		}
@@ -227,6 +248,44 @@ void APlayerCharacter::UpdateUI()
 	}
 }
 
+void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::PrimaryInteract_Implementation(Instance);
+
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	{
+		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
+	}
+}
+
+void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::CompletedPrimaryInteract_Implementation(Instance);
+	
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	{
+		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
+	}
+}
+
+void APlayerCharacter::GrappleStart()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+}
+
+void APlayerCharacter::GrappleDuring(FVector GrabPoint)
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Grab Point X: %f, Y: %f, Z: %f"), GrabPoint.X, GrabPoint.Y, GrabPoint.Z));
+	GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * 700);
+}
+
+void APlayerCharacter::GrappleEnd()
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+	}
+}
 
 void APlayerCharacter::Init_Implementation()
 {
