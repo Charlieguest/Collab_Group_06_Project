@@ -35,9 +35,12 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 	if (OtherCharacter != nullptr)
 	{
-		OtherCharacter->GetCharacterMovement()->AddForce(FVector(0,0,-10000));
-		OtherCharacter->GetCharacterMovement()->GravityScale = -1.00;
-		OtherCharacter->GetVelocity().Set(0,0,100.0);
+		if (IsActive)
+		{
+			OtherCharacter->LaunchCharacter(FVector(0,0,100), true, true);
+			OtherCharacter->GetCharacterMovement()->GravityScale = -1.00;
+			OtherCharacter->GetVelocity().Set(0,0,100.0);
+		}
 		
 	}
 }

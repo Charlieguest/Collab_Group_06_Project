@@ -18,6 +18,7 @@ public:
 	AGaseousPlant();
 	UPROPERTY(EditAnywhere, Category="Collider Object") UBoxComponent* Collider;
 	UPROPERTY(EditAnywhere, Category="Collider Object") float gravity;
+	UPROPERTY(EditAnywhere, Category="Collider Object") bool IsActive = true;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
