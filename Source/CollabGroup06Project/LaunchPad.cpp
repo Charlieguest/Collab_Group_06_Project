@@ -19,6 +19,7 @@ void ALaunchPad::BeginPlay()
 	Super::BeginPlay();
 	Collider = GetComponentByClass<UBoxComponent>();
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &ALaunchPad::ALaunchPad::OnOverlapBeginBox);
+	
 }
 
 // Called every frame

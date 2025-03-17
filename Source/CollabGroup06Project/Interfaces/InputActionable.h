@@ -31,5 +31,18 @@ public:
 	void ToggleCamera(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void TakePhoto(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Scan(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Combine(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void PrimaryInteract(const FInputActionValue& Intance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CompletedPrimaryInteract(const FInputActionValue& Intance);
+	
 };

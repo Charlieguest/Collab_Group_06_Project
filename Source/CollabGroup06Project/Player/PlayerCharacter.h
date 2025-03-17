@@ -4,11 +4,14 @@
 #include "Camera/CameraComponent.h"
 #include "CollabGroup06Project/Interfaces/InputActionable.h"
 #include "GameFramework/Character.h"
+#include "Blueprint/UserWidget.h"
 #include "PlayerCharacter.generated.h"
 
+
 class USpringArmComponent;
-struct FInputActionValue;
 class UCameraComponent;
+class AGrappleGun;
+struct FInputActionValue;
 
 UCLASS()
 class COLLABGROUP06PROJECT_API APlayerCharacter : public ACharacter, public IInputActionable
@@ -30,7 +33,44 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	/* ------------------------------- */
+	/* ------------------------------- */
+	/* ---- Camera mode functions ---- */
+	/* ------------------------------- */
+	/* ------------------------------- */
+
 	virtual void ToggleCamera_Implementation(const FInputActionValue& Instance) override;
+	
+	virtual void TakePhoto_Implementation(const FInputActionValue& Instance) override;
+
+	virtual void Scan_Implementation(const FInputActionValue& Instance) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void CaptureScreenshot();
+
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	UTexture2D* LoadScreenshotAsTexture();
+
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void UpdateUI();
+
+	/* ------------------------------- */
+	/* ------------------------------- */
+	/* ---- Grapple Functions -------- */
+	/* ------------------------------- */
+	/* ------------------------------- */
+
+	virtual void PrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	
+	UFUNCTION()
+	void GrappleStart();
+	UFUNCTION()
+	void GrappleDuring(FVector grabPoint);
+	UFUNCTION()
+	void GrappleEnd();
+
+	//Components
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
@@ -43,6 +83,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
+
+	/* ------------------------------- */
+	/* ----- Camera Components ------- */
+	/* ------------------------------- */
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _CameraArmLengthDef = 300.0f;
@@ -53,6 +97,28 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
 	bool bIsCameraOpen = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
+	bool bToggleInput = false;
+
+	//Testing UI for screenshotting
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> ScreenshotClass;
+	UUserWidget* ScreenshotWidgetInstance;
+
+	/* ------------------------------- */
+	/* ---- Grapple Components ------- */
+	/* ------------------------------- */
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
+	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AGrappleGun> _GrappleGun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> _SpawnedGrappleGun;
+	
 };
