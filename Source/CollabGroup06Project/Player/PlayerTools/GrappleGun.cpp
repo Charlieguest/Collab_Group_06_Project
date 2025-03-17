@@ -35,7 +35,7 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = GetOwner();
 	SpawnParameters.Instigator = GetInstigator();
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	AActor* grapple = world->SpawnActor(_ProjectileRef, &_BerryAttachPoint->GetComponentTransform(), SpawnParameters);
 	_GrappleProjectile = Cast<AGrappleProjectile>(grapple);
@@ -53,7 +53,8 @@ void AGrappleGun::Fire_Stop_Implementation()
 {
 	IFireable::Fire_Stop_Implementation();
 	
-	_IsGrappling = false;
+	_IsGrapplingPlayer = false;
+	_IsGrapplingBerry = false;
 	_HasFired = false;
 	
 	OnGrappleEnd.Broadcast();
@@ -81,7 +82,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, OtherActor->GetName());
 
-		_IsGrappling = true;
+		_IsGrapplingBerry = true;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(OtherActor->GetActorLocation());
 		_Cable->SetVisibility(true);
 		_BerryGrappleTimerDelegate.BindUFunction(this, FName("GrappleBerry"), BerryPickup);
@@ -89,7 +90,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	}
 	else
 	{
-		_IsGrappling = true;
+		_IsGrapplingPlayer = true;
 		
 		OnGrappleStart.Broadcast();
 		_ProjectileHitLoc = Hit.ImpactPoint;
@@ -101,7 +102,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 
 void AGrappleGun::GrapplePlayer()
 {
-	if(!_IsGrappling)
+	if(!_IsGrapplingPlayer)
 	{
 		//Stop the timer
 	}
@@ -115,7 +116,7 @@ void AGrappleGun::GrapplePlayer()
 
 void AGrappleGun::GrappleBerry(ABerryPickup* BerryPickup)
 {
-	if(!_IsGrappling)
+	if(!_IsGrapplingBerry)
 	{
 		//Stop the timer
 	}

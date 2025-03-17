@@ -69,7 +69,9 @@ public:
 	FVector _ProjectileHitLoc;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool _IsGrappling;
+	bool _IsGrapplingPlayer;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool _IsGrapplingBerry;
 
 	TObjectPtr<AGrappleProjectile> _GrappleProjectile;
 

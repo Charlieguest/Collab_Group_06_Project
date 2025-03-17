@@ -38,7 +38,7 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->ToggleCamera.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_CameraToggle);
 			PEI->BindAction(_InputActions->TakePhoto.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_TakePhoto);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
-			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Canceled, this, &APlayerCharController::CAM_CompletePrimaryInteract);
+			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_CompletePrimaryInteract);
 		}
 	}
 }
@@ -133,7 +133,10 @@ void APlayerCharController::CAM_PrimaryInteract(const FInputActionValue& Instanc
 
 void APlayerCharController::CAM_CompletePrimaryInteract(const FInputActionValue& Instance)
 {
-	IInputActionable::Execute_CompletedPrimaryInteract(_PlayerPawn, Instance);
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_CompletedPrimaryInteract(_PlayerPawn, Instance);
+	}
 }
 
 
