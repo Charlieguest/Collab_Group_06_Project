@@ -39,7 +39,4 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Combine(const FInputActionValue& Instance);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Interact(const FInputActionValue& Instance);
 };
