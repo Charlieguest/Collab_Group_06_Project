@@ -7,9 +7,11 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerCharacter.generated.h"
 
+
 class USpringArmComponent;
-struct FInputActionValue;
 class UCameraComponent;
+class AGrappleGun;
+struct FInputActionValue;
 
 UCLASS()
 class COLLABGROUP06PROJECT_API APlayerCharacter : public ACharacter, public IInputActionable
@@ -31,7 +33,11 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	//Camera mode functions
+	/* ------------------------------- */
+	/* ------------------------------- */
+	/* ---- Camera mode functions ---- */
+	/* ------------------------------- */
+	/* ------------------------------- */
 
 	virtual void ToggleCamera_Implementation(const FInputActionValue& Instance) override;
 	
@@ -48,6 +54,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void UpdateUI();
 
+	/* ------------------------------- */
+	/* ------------------------------- */
+	/* ---- Grapple Functions -------- */
+	/* ------------------------------- */
+	/* ------------------------------- */
+
+	virtual void PrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	
+	UFUNCTION()
+	void GrappleStart();
+	UFUNCTION()
+	void GrappleDuring(FVector grabPoint);
+	UFUNCTION()
+	void GrappleEnd();
+
 	//Components
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
@@ -61,6 +83,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
+
+	/* ------------------------------- */
+	/* ----- Camera Components ------- */
+	/* ------------------------------- */
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _CameraArmLengthDef = 300.0f;
@@ -81,4 +107,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> ScreenshotClass;
 	UUserWidget* ScreenshotWidgetInstance;
+
+	/* ------------------------------- */
+	/* ---- Grapple Components ------- */
+	/* ------------------------------- */
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
+	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AGrappleGun> _GrappleGun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> _SpawnedGrappleGun;
+	
 };
