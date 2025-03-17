@@ -13,14 +13,11 @@ class COLLABGROUP06PROJECT_API AInteractTestObject : public AActor, public IInte
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AInteractTestObject();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	
 	virtual void interact_Implementation() override;
 };

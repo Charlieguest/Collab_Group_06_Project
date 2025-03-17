@@ -291,7 +291,7 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				{
 					continue;
 				}
-				//Execute_Interact(OverlappingActors[i]);
+				IInteract::Execute_interact(OverlappingActors[i]);
 			}
 		}
 }
