@@ -8,6 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 
+class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class AGrappleGun;
@@ -60,8 +61,9 @@ public:
 	/* ------------------------------- */
 	/* ------------------------------- */
 
-	virtual void PrimaryInteract_Implementation(const FInputActionValue& Intance) override;
-	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
+	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
+	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -78,11 +80,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	USpringArmComponent* _CameraSpringArmComponent;
 
+	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _WalkSpeed = 200.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
+
+	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
 	/* ------------------------------- */
 	/* ----- Camera Components ------- */

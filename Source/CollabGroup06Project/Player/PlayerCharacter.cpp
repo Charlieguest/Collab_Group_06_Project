@@ -2,6 +2,7 @@
 
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
+#include "CollabGroup06Project/Interfaces/Interact.h"
 #include "Components/CapsuleComponent.h"
 #include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
 #include "Components/ArrowComponent.h"
@@ -10,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
+#include "Components/SphereComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -22,6 +24,13 @@ APlayerCharacter::APlayerCharacter()
 	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
+
+	_InteractionZoneSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionZone"));
+	_InteractionZoneSphereComponent->SetupAttachment(_CameraSpringArmComponent);
+	_InteractionZoneSphereComponent->AddLocalOffset(_InteractZoneOffset);
+	_InteractionZoneSphereComponent->InitSphereRadius(110);
+	_InteractionZoneSphereComponent->SetGenerateOverlapEvents(true);
+	_InteractionZoneSphereComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
 
 	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
 	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
@@ -266,6 +275,25 @@ void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActio
 	{
 		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
 	}
+}
+
+void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance)
+{
+	//check what is inside the interaction zone and if it implements the interface. if it does, call it
+	TArray<AActor*> OverlappingActors;
+	_InteractionZoneSphereComponent->GetOverlappingActors(OverlappingActors);
+	for(int i = 0; i < OverlappingActors.Num(); i++)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[i]->GetName());
+			if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
+			{          //if the interact interface is called on the player it crashes the editor
+				if(OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
+				{
+					continue;
+				}
+				//Execute_Interact(OverlappingActors[i]);
+			}
+		}
 }
 
 void APlayerCharacter::GrappleStart()
