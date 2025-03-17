@@ -45,6 +45,8 @@ public:
 
 	void CAM_Scan(const FInputActionValue& Instance);
 
+	void CAM_Interact(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 

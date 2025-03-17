@@ -2,11 +2,14 @@
 
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
+#include "Chaos/Utilities.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -20,6 +23,13 @@ APlayerCharacter::APlayerCharacter()
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
 
+	_InteractionZoneSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionZone"));
+	_InteractionZoneSphereComponent->SetupAttachment(_CameraSpringArmComponent);
+	_InteractionZoneSphereComponent->AddLocalOffset(interactZoneOffset);
+	_InteractionZoneSphereComponent->InitSphereRadius(110);
+	_InteractionZoneSphereComponent->SetGenerateOverlapEvents(true);
+	_InteractionZoneSphereComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
+	
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
@@ -184,6 +194,27 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 	IInputActionable::Scan_Implementation(Instance);
 }
 
+void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance)
+{
+	//check what is inside the interaction zone and if it implements the interface. if it does, call it
+	TArray<AActor*> OverlappingActors;
+	_InteractionZoneSphereComponent->GetOverlappingActors(OverlappingActors);
+	for(int i = 0; i < OverlappingActors.Num(); i++)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[i]->GetName());
+		if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
+		{
+			//if the interact interface is called on the player it crashes the editor
+			if(OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
+			{
+				continue;
+			}
+			Execute_interact(OverlappingActors[i]);
+		}
+		
+	}
+}
+
 
 void APlayerCharacter::CaptureScreenshot()
 {
@@ -231,4 +262,6 @@ void APlayerCharacter::UpdateUI()
 void APlayerCharacter::Init_Implementation()
 {
 }
+
+
 
