@@ -5,6 +5,7 @@
 #include "PlayerBerry.generated.h"
 
 class USphereComponent;
+class UStaticMeshComponent;
 
 UCLASS()
 class COLLABGROUP06PROJECT_API APlayerBerry : public AActor
@@ -16,6 +17,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TObjectPtr<USphereComponent> _Root;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TObjectPtr<UStaticMeshComponent> _AttachedBerryMesh;
 	
 protected:
 	virtual void BeginPlay() override;

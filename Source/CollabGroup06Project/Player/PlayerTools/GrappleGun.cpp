@@ -32,21 +32,33 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 	UWorld* const world = GetWorld();
 
 	if (world == nullptr || _ProjectileRef == nullptr || _HasFired == true) {  return false; }
+
+	if(_AttachedBerry != nullptr)
+	{
+		_AttachedBerry->_AttachedBerryMesh->SetVisibility(false);
+	}
 	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = GetOwner();
 	SpawnParameters.Instigator = GetInstigator();
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+	//Spawning actor
 	AActor* grapple = world->SpawnActor(_ProjectileRef, &_BerryAttachPoint->GetComponentTransform(), SpawnParameters);
 	_GrappleProjectile = Cast<AGrappleProjectile>(grapple);
 
+	//Listening to hit events
 	_GrappleProjectile->CollisionComp->OnComponentHit.AddDynamic(this, &AGrappleGun::OnProjectileHit);
+
+	if(_HasBerry)
+	{
+		_GrappleProjectile->AttachBerryProjectile();
+	}
+	
+	//Applying Force
 	_GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
-	
-	_FireTime = 1;
+
 	_HasFired = true;
-	
 	return true;
 }
 
@@ -69,7 +81,21 @@ void AGrappleGun::Fire_Stop_Implementation()
 	
 	if(_GrappleProjectile != nullptr)
 	{
+		//Destroying Berry on Projectile 
+		_GrappleProjectile->GetAttachedActors(_AttachedProjectileActors, false, false);
+
+		for(AActor* berry : _AttachedProjectileActors)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Hits")));
+			berry->Destroy();
+		}
+
 		_GrappleProjectile->Destroy();
+	}
+
+	if(_AttachedBerry != nullptr)
+	{
+		_AttachedBerry->_AttachedBerryMesh->SetVisibility(true);
 	}
 }
 
@@ -81,8 +107,6 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	
 	if(BerryPickup != nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, OtherActor->GetName());
-
 		_IsGrapplingBerry = true;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(OtherActor->GetActorLocation());
 		_Cable->SetVisibility(true);
@@ -137,5 +161,7 @@ void AGrappleGun::AttachBerry()
 	AActor* playerBerry = GetWorld()->SpawnActor(_AttachedBerryRef, &_BerryAttachPoint->GetComponentTransform(), spawnParams);
 	playerBerry->AttachToComponent(_BerryAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
+	_AttachedBerry = Cast<APlayerBerry>(playerBerry);
+	
 	_HasBerry = true;
 }

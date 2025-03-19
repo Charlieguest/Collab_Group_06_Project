@@ -48,9 +48,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _HasFired;
-
-	int _FireTime = 1;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float _ProjectileSpeed = 10000.0f;
 
@@ -76,6 +74,8 @@ public:
 
 	TObjectPtr<AGrappleProjectile> _GrappleProjectile;
 
+	TArray<AActor*> _AttachedProjectileActors;
+
 	FGrappleStartSignature OnGrappleStart;
 	FGrappleDuringSignature OnGrappleDuring;
 	FGrappleEndSignature OnGrappleEnd;
@@ -98,4 +98,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	TSubclassOf<APlayerBerry> _AttachedBerryRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	TObjectPtr<APlayerBerry> _AttachedBerry;
 };
