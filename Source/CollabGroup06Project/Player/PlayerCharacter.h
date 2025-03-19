@@ -8,6 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 
+class APlayerBerry;
 class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -64,6 +65,11 @@ public:
 	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
+
+	void GrappleShoot();
+	FTimerHandle _GrappleShootDelay;
+	bool _HasFired;
+
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -73,6 +79,8 @@ public:
 	void GrappleEnd();
 
 	//Components
+
+	FRotator MovementRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
@@ -120,11 +128,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
 	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AGrappleGun> _GrappleGun;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<AActor> _SpawnedGrappleGun;
-	
+	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
 };

@@ -3,6 +3,7 @@
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
+#include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
 #include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
 #include "Components/ArrowComponent.h"
@@ -57,14 +58,13 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	_SpawnedGrappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
-	_SpawnedGrappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	AActor* grappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
-	AGrappleGun* grappleGun = Cast<AGrappleGun>(_SpawnedGrappleGun);
-	grappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
-	grappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
-	grappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
-	
+	_SpawnedGrappleGun = Cast<AGrappleGun>(grappleGun);
+	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 }
 
 
@@ -75,7 +75,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 		if(Controller != nullptr)
 		{
 			const FVector2d MoveValue = Instance.Get<FVector2d>();
-			const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
+			MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 
 			if(MoveValue.Y != 0.0f)
 			{
@@ -214,7 +214,6 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 	IInputActionable::Scan_Implementation(Instance);
 }
 
-
 void APlayerCharacter::CaptureScreenshot()
 {
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
@@ -260,7 +259,18 @@ void APlayerCharacter::UpdateUI()
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
 	IInputActionable::PrimaryInteract_Implementation(Instance);
+	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
+	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
+	if(!_HasFired)
+	{
+		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
+		_HasFired = true;
+	}
+}
+
+void APlayerCharacter::GrappleShoot()
+{
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
 	{
 		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
@@ -273,6 +283,7 @@ void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActio
 	
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
 	{
+		_HasFired = false;
 		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
 	}
 }
@@ -286,12 +297,24 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[i]->GetName());
 			if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
-			{          //if the interact interface is called on the player it crashes the editor
+			{
+				//if the interact interface is called on the player it crashes the editor
 				if(OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
 				{
 					continue;
 				}
-				IInteract::Execute_interact(OverlappingActors[i]);
+
+				// Checking if berry to attach berry to character
+				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
+				if(berryPickup != nullptr)
+				{
+
+					//Spawning Berry on GrappleHook as visual reference
+					_SpawnedGrappleGun->AttachBerry();
+
+					IInteract::Execute_interact(OverlappingActors[i]);
+				}
+				
 			}
 		}
 }

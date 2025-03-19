@@ -1,5 +1,6 @@
 ﻿#include "GrappleGun.h"
 #include "CableComponent.h"
+#include "PlayerBerry.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "CollabGroup06Project/Projectiles/GrappleProjectile.h"
 #include "Components/ArrowComponent.h"
@@ -126,4 +127,15 @@ void AGrappleGun::GrappleBerry(ABerryPickup* BerryPickup)
 		BerryPickup->PulltoPlayerPos(GetOwner()->GetActorLocation());
 		GetWorld()->GetTimerManager().SetTimer(_BerryGrappleTimer, _BerryGrappleTimerDelegate, 0.01f, false);
 	}
+}
+
+void AGrappleGun::AttachBerry()
+{
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	
+	AActor* playerBerry = GetWorld()->SpawnActor(_AttachedBerryRef, &_BerryAttachPoint->GetComponentTransform(), spawnParams);
+	playerBerry->AttachToComponent(_BerryAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+	_HasBerry = true;
 }
