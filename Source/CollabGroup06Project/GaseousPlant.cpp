@@ -23,11 +23,7 @@ void AGaseousPlant::BeginPlay()
 }
 
 // Called every frame
-void AGaseousPlant::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
-}
 
 void AGaseousPlant::PadActive_Implementation()
 {

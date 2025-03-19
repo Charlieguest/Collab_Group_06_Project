@@ -18,12 +18,6 @@ void AInteractPad_Base::BeginPlay()
 	
 }
 
-// Called every frame
-void AInteractPad_Base::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 void AInteractPad_Base::PadActive_Implementation()
 {
