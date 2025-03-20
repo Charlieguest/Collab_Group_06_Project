@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "InteractiveToolObjects.h"
 #include "CollabGroup06Project/Interfaces/Fireable.h"
 #include "GrappleGun.generated.h"
 
