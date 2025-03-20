@@ -8,6 +8,8 @@
 #include "PlayerCharacter.generated.h"
 
 
+class APlayerBerry;
+class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class AGrappleGun;
@@ -60,8 +62,14 @@ public:
 	/* ------------------------------- */
 	/* ------------------------------- */
 
-	virtual void PrimaryInteract_Implementation(const FInputActionValue& Intance) override;
-	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Intance) override;
+	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
+	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
+	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
+
+	void GrappleShoot();
+	FTimerHandle _GrappleShootDelay;
+	bool _HasFired;
+
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -72,17 +80,23 @@ public:
 
 	//Components
 
+	FRotator MovementRotation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	UCameraComponent* _ThirdPersonCameraComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	USpringArmComponent* _CameraSpringArmComponent;
 
+	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _WalkSpeed = 200.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
+
+	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
 	/* ------------------------------- */
 	/* ----- Camera Components ------- */
@@ -114,11 +128,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
 	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AGrappleGun> _GrappleGun;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<AActor> _SpawnedGrappleGun;
-	
+	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
 };
