@@ -44,5 +44,8 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void CompletedPrimaryInteract(const FInputActionValue& Intance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Interact(const FInputActionValue& Intance);
 	
 };

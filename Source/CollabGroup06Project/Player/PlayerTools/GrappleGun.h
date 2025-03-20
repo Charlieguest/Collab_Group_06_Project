@@ -9,6 +9,7 @@ class ABerryPickup;
 class AGrappleProjectile;
 class UArrowComponent;
 class UCableComponent;
+class APlayerBerry;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrappleDuringSignature, FVector, GrapPoint);
@@ -35,6 +36,9 @@ public:
 	
 	UFUNCTION()
 	void GrappleBerry(ABerryPickup* BerryPickup);
+
+	UFUNCTION()
+	void AttachBerry();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AGrappleProjectile> _ProjectileRef;
@@ -42,14 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USceneComponent> _Root;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UArrowComponent> _BerryAttachPoint;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _HasFired;
-
-	int _FireTime = 1;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float _ProjectileSpeed = 10000.0f;
 
@@ -75,6 +74,8 @@ public:
 
 	TObjectPtr<AGrappleProjectile> _GrappleProjectile;
 
+	TArray<AActor*> _AttachedProjectileActors;
+
 	FGrappleStartSignature OnGrappleStart;
 	FGrappleDuringSignature OnGrappleDuring;
 	FGrappleEndSignature OnGrappleEnd;
@@ -82,5 +83,22 @@ public:
 	FTimerHandle _PlayerGrappleTimer;
 	FTimerDelegate _BerryGrappleTimerDelegate;
 	FTimerHandle _BerryGrappleTimer;
+
+	/* ------------------------ */
+	/* ------------------------ */
+	/* --- BERRY ATTACH VARS -- */
+	/* ------------------------ */
+	/* ------------------------ */
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
+	TObjectPtr<UArrowComponent> _BerryAttachPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool _HasBerry;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	TSubclassOf<APlayerBerry> _AttachedBerryRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	TObjectPtr<APlayerBerry> _AttachedBerry;
 };

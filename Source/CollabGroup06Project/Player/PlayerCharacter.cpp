@@ -2,6 +2,8 @@
 
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
+#include "CollabGroup06Project/Interfaces/Interact.h"
+#include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
 #include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
 #include "Components/ArrowComponent.h"
@@ -10,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
+#include "Components/SphereComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -22,6 +25,13 @@ APlayerCharacter::APlayerCharacter()
 	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
+
+	_InteractionZoneSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionZone"));
+	_InteractionZoneSphereComponent->SetupAttachment(_CameraSpringArmComponent);
+	_InteractionZoneSphereComponent->AddLocalOffset(_InteractZoneOffset);
+	_InteractionZoneSphereComponent->InitSphereRadius(110);
+	_InteractionZoneSphereComponent->SetGenerateOverlapEvents(true);
+	_InteractionZoneSphereComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
 
 	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
 	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
@@ -48,14 +58,13 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	_SpawnedGrappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
-	_SpawnedGrappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	AActor* grappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
-	AGrappleGun* grappleGun = Cast<AGrappleGun>(_SpawnedGrappleGun);
-	grappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
-	grappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
-	grappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
-	
+	_SpawnedGrappleGun = Cast<AGrappleGun>(grappleGun);
+	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 }
 
 
@@ -66,7 +75,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 		if(Controller != nullptr)
 		{
 			const FVector2d MoveValue = Instance.Get<FVector2d>();
-			const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
+			MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 
 			if(MoveValue.Y != 0.0f)
 			{
@@ -205,7 +214,6 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 	IInputActionable::Scan_Implementation(Instance);
 }
 
-
 void APlayerCharacter::CaptureScreenshot()
 {
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
@@ -251,7 +259,18 @@ void APlayerCharacter::UpdateUI()
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
 	IInputActionable::PrimaryInteract_Implementation(Instance);
+	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
+	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
+	if(!_HasFired)
+	{
+		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
+		_HasFired = true;
+	}
+}
+
+void APlayerCharacter::GrappleShoot()
+{
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
 	{
 		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
@@ -264,8 +283,40 @@ void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActio
 	
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
 	{
+		_HasFired = false;
 		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
 	}
+}
+
+void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance)
+{
+	//check what is inside the interaction zone and if it implements the interface. if it does, call it
+	TArray<AActor*> OverlappingActors;
+	_InteractionZoneSphereComponent->GetOverlappingActors(OverlappingActors);
+	for(int i = 0; i < OverlappingActors.Num(); i++)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[i]->GetName());
+			if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
+			{
+				//if the interact interface is called on the player it crashes the editor
+				if(OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
+				{
+					continue;
+				}
+
+				// Checking if berry to attach berry to character
+				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
+				if(berryPickup != nullptr)
+				{
+
+					//Spawning Berry on GrappleHook as visual reference
+					_SpawnedGrappleGun->AttachBerry();
+
+					IInteract::Execute_interact(OverlappingActors[i]);
+				}
+				
+			}
+		}
 }
 
 void APlayerCharacter::GrappleStart()
