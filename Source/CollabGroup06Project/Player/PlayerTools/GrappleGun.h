@@ -38,6 +38,11 @@ public:
 
 	UFUNCTION()
 	void AttachBerry();
+
+	void DestroyGrappleProjectile();
+
+	UFUNCTION()
+	void RemoveBerry();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AGrappleProjectile> _ProjectileRef;
@@ -72,8 +77,6 @@ public:
 	bool _IsGrapplingBerry;
 
 	TObjectPtr<AGrappleProjectile> _GrappleProjectile;
-
-	TArray<AActor*> _AttachedProjectileActors;
 
 	FGrappleStartSignature OnGrappleStart;
 	FGrappleDuringSignature OnGrappleDuring;
