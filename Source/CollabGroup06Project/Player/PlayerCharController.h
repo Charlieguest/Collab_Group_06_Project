@@ -49,6 +49,8 @@ public:
 
 	void CAM_CompletePrimaryInteract(const FInputActionValue& Instance);
 
+	void CAM_SecondaryInteract(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 
