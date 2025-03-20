@@ -1,6 +1,8 @@
 ﻿#include "GrappleProjectile.h"
 
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
+#include "CollabGroup06Project/Player/PlayerTools/PlayerBerry.h"
+#include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
 
 AGrappleProjectile::AGrappleProjectile()
@@ -20,6 +22,9 @@ AGrappleProjectile::AGrappleProjectile()
 	RootComponent = CollisionComp;
 
 	InitialLifeSpan = 0;
+
+	_BerryAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Berry Attach Point"));
+	_BerryAttachPoint->SetupAttachment(RootComponent);
 }
 
 void AGrappleProjectile::BeginPlay()
@@ -42,8 +47,17 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		CollisionComp->SetSimulatePhysics(false);
 		CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	}
-	
 
 }
 
 
+void AGrappleProjectile::AttachBerryProjectile()
+{
+	_ProjectileHasBerry = true;
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+
+	AActor* playerBerry = GetWorld()->SpawnActor(_AttachedBerryRef, &_BerryAttachPoint->GetComponentTransform(), spawnParams);
+	playerBerry->AttachToComponent(_BerryAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+}
