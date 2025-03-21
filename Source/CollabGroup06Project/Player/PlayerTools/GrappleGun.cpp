@@ -56,6 +56,8 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 	{
 		_GrappleProjectile->AttachBerryProjectile();
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(_InitialProjectileTimerHandle, this, &AGrappleGun::InitialProjectileTimer, 0.1f, false);
 	
 	//Applying Force
 	_GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
@@ -179,7 +181,7 @@ void AGrappleGun::DestroyGrappleProjectile()
 				berry->Destroy();
 			}
 		}
-
+		_HasFired = false;
 		_GrappleProjectile->Destroy();
 	}
 }
@@ -190,5 +192,27 @@ void AGrappleGun::RemoveBerry()
 	if(_AttachedBerry != nullptr)
 	{
 		_AttachedBerry->Destroy();
+	}
+}
+
+void AGrappleGun::InitialProjectileTimer()
+{
+
+	if(!_HasFired)
+	{
+	}
+	else if(!_IsGrapplingBerry && !_IsGrapplingPlayer)
+	{
+		FVector currentProjectileDist = this->GetActorLocation() - _GrappleProjectile->GetActorLocation();
+		
+		if(abs(currentProjectileDist.X) > _MaxFireDistance ||
+		   abs(currentProjectileDist.Y) > _MaxFireDistance ||
+		   abs(currentProjectileDist.Z) > _MaxFireDistance 
+		   )
+		{
+				DestroyGrappleProjectile();
+		}
+		
+		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::InitialProjectileTimer, 0.01f, false);
 	}
 }

@@ -43,18 +43,33 @@ public:
 
 	UFUNCTION()
 	void RemoveBerry();
+
+	UFUNCTION()
+	void InitialProjectileTimer();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AGrappleProjectile> _ProjectileRef;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USceneComponent> _Root;
 
+	/* ------------------------ */
+	/* ------------------------ */
+	/* -----PROJECTILE VARS---- */
+	/* ------------------------ */
+	/* ------------------------ */
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AGrappleProjectile> _ProjectileRef;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _HasFired;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float _ProjectileSpeed = 10000.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float _MaxFireDistance = 1000.0f;
+	
+	FTimerHandle _InitialProjectileTimerHandle;
 
 	/* ------------------------ */
 	/* ------------------------ */
@@ -64,9 +79,6 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = cable, meta = (AllowPrivateAccess = "true"))
 	UCableComponent* _Cable;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	float _MaxDistance = 1600.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector _ProjectileHitLoc;
