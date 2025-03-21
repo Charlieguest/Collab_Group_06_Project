@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void UpdateUI();
 
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	bool isAnythingInCameraView(UWorld* world);
+
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Grapple Functions -------- */
