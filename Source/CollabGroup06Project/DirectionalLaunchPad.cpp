@@ -17,9 +17,9 @@ ADirectionalLaunchPad::ADirectionalLaunchPad()
 void ADirectionalLaunchPad::BeginPlay()
 {
 	Super::BeginPlay();
-	Collider = GetComponentByClass<UBoxComponent>();
-	Arrow = GetComponentByClass<UArrowComponent>();
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &ADirectionalLaunchPad::ADirectionalLaunchPad::OnOverlapBeginBox);
+	_CollisionComp = GetComponentByClass<UBoxComponent>();
+	_ArrowComp = GetComponentByClass<UArrowComponent>();
+	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ADirectionalLaunchPad::ADirectionalLaunchPad::OnOverlapBeginBox);
 }
 
 // Called every frame
@@ -34,7 +34,7 @@ void ADirectionalLaunchPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedCom
 	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 	if (OtherCharacter != nullptr)
 	{
-		FVector LaunchVelocity = Arrow->GetForwardVector() * M_LaunchVelocity;
+		FVector LaunchVelocity = _ArrowComp->GetForwardVector() * M_LaunchVelocity;
 		OtherCharacter->LaunchCharacter(FVector(LaunchVelocity) , XYOverride, ZOverride);
 	}
 	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.f, FColor::Red, *FString::Printf(TEXT("On Component Overlap Begin!")));
