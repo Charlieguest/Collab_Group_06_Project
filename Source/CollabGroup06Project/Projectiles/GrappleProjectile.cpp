@@ -1,9 +1,11 @@
 ﻿#include "GrappleProjectile.h"
 
+#include "../InteractablePads/InteractPad_Base.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "CollabGroup06Project/Player/PlayerTools/PlayerBerry.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AGrappleProjectile::AGrappleProjectile()
 {
@@ -44,6 +46,13 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	}
 	else
 	{
+		if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
+		{
+			OnRemoveBerry.Broadcast();
+			
+			IPadInteractable::Execute_PadActive(OtherActor);
+		}
+		
 		CollisionComp->SetSimulatePhysics(false);
 		CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	}

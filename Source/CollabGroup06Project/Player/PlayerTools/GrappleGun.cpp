@@ -1,6 +1,7 @@
 ﻿#include "GrappleGun.h"
 #include "CableComponent.h"
 #include "PlayerBerry.h"
+#include "CollabGroup06Project/InteractablePads/InteractPad_FlyTrap.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "CollabGroup06Project/Projectiles/GrappleProjectile.h"
 #include "Components/ArrowComponent.h"
@@ -49,11 +50,14 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 
 	//Listening to hit events
 	_GrappleProjectile->CollisionComp->OnComponentHit.AddDynamic(this, &AGrappleGun::OnProjectileHit);
-
+	_GrappleProjectile->OnRemoveBerry.AddUniqueDynamic(this, &AGrappleGun::RemoveBerry);
+	
 	if(_HasBerry)
 	{
 		_GrappleProjectile->AttachBerryProjectile();
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(_InitialProjectileTimerHandle, this, &AGrappleGun::InitialProjectileTimer, 0.1f, false);
 	
 	//Applying Force
 	_GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
@@ -79,19 +83,7 @@ void AGrappleGun::Fire_Stop_Implementation()
 		_BerryGrappleTimerDelegate.Unbind();
 	}
 	
-	if(_GrappleProjectile != nullptr)
-	{
-		//Destroying Berry on Projectile 
-		_GrappleProjectile->GetAttachedActors(_AttachedProjectileActors, false, false);
-
-		for(AActor* berry : _AttachedProjectileActors)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Hits")));
-			berry->Destroy();
-		}
-
-		_GrappleProjectile->Destroy();
-	}
+	DestroyGrappleProjectile();
 
 	if(_AttachedBerry != nullptr)
 	{
@@ -104,6 +96,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 {
 
 	ABerryPickup* BerryPickup = Cast<ABerryPickup>(OtherActor);
+	AInteractPad_FlyTrap* Flytrap = Cast<AInteractPad_FlyTrap>(OtherActor);
 	
 	if(BerryPickup != nullptr)
 	{
@@ -113,7 +106,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 		_BerryGrappleTimerDelegate.BindUFunction(this, FName("GrappleBerry"), BerryPickup);
 		GetWorld()->GetTimerManager().SetTimer(_BerryGrappleTimer, _BerryGrappleTimerDelegate, 0.05f, false);
 	}
-	else
+	else if(Flytrap != nullptr && Flytrap->isActive)
 	{
 		_IsGrapplingPlayer = true;
 		
@@ -122,6 +115,11 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(_ProjectileHitLoc);
 		_Cable->SetVisibility(true);
 		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::GrapplePlayer, 0.05f, false);
+	}
+	else
+	{
+		//Hit nothing relevant to grapple to
+		DestroyGrappleProjectile();
 	}
 }
 
@@ -164,4 +162,57 @@ void AGrappleGun::AttachBerry()
 	_AttachedBerry = Cast<APlayerBerry>(playerBerry);
 	
 	_HasBerry = true;
+}
+
+void AGrappleGun::DestroyGrappleProjectile()
+{
+	if(_GrappleProjectile != nullptr)
+	{
+		//Destroying Berry on Projectile
+
+		TArray<AActor*> attachedProjectileActors;
+		
+		_GrappleProjectile->GetAttachedActors(attachedProjectileActors, false, false);
+
+		if(attachedProjectileActors.Num() > 0)
+		{
+			for(AActor* berry : attachedProjectileActors)
+			{
+				berry->Destroy();
+			}
+		}
+		_HasFired = false;
+		_GrappleProjectile->Destroy();
+	}
+}
+
+void AGrappleGun::RemoveBerry()
+{
+	_HasBerry = false;
+	if(_AttachedBerry != nullptr)
+	{
+		_AttachedBerry->Destroy();
+	}
+}
+
+void AGrappleGun::InitialProjectileTimer()
+{
+
+	if(!_HasFired)
+	{
+	}
+	else if(!_IsGrapplingBerry && !_IsGrapplingPlayer)
+	{
+		FVector currentProjectileDist = this->GetActorLocation() - _GrappleProjectile->GetActorLocation();
+		
+		if(abs(currentProjectileDist.X) > _MaxFireDistance ||
+		   abs(currentProjectileDist.Y) > _MaxFireDistance ||
+		   abs(currentProjectileDist.Z) > _MaxFireDistance 
+		   )
+		{
+				DestroyGrappleProjectile();
+		}
+		
+		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::InitialProjectileTimer, 0.01f, false);
+	}
 }
