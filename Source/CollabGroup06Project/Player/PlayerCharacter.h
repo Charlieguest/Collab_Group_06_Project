@@ -81,6 +81,15 @@ public:
 	UFUNCTION()
 	void GrappleEnd();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetSpeechBubble();
+	
+	/* ------------------------------- */
+	/* ------ Scan Functions --------- */
+	/* ------------------------------- */
+
+	void ReleasePlayer();
+	
 	//Components
 
 	FRotator MovementRotation;
@@ -94,7 +103,7 @@ public:
 	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _WalkSpeed = 200.0f;
+	float _WalkSpeed = 2.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	float _SprintSpeed = 700.0f;
@@ -137,4 +146,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
+
+
+	/* ------------------------------- */
+	/* ------ Scan Components -------- */
+	/* ------------------------------- */
+
+	FTimerHandle _PerformScanTimerHandle;
+	bool _IsScanning;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<AActor> _Animal;
 };
