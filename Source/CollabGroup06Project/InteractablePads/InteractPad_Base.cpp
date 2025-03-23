@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CollabGroup06Project/Public/InteractPad_Base.h"
+#include "InteractPad_Base.h"
 
 // Sets default values
 AInteractPad_Base::AInteractPad_Base()

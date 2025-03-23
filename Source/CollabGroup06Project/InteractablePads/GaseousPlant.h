@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
-#include "Public/InteractPad_Base.h"
+#include "InteractPad_Base.h"
 #include "GaseousPlant.generated.h"
 
 UCLASS()

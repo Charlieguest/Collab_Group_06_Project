@@ -1,6 +1,6 @@
 ﻿#include "GrappleProjectile.h"
 
-#include "InteractPad_Base.h"
+#include "../InteractablePads/InteractPad_Base.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "CollabGroup06Project/Player/PlayerTools/PlayerBerry.h"
 #include "Components/ArrowComponent.h"
