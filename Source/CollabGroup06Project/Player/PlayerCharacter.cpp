@@ -13,6 +13,8 @@
 #include "Kismet/KismetRenderingLibrary.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
+#include "EngineUtils.h"
+
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -204,6 +206,7 @@ void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instanc
 {
 	if(bIsCameraOpen)
 	{
+		isAnythingInCameraView(GetWorld());
 		CaptureScreenshot();
 		UpdateUI();
 	}
@@ -254,6 +257,53 @@ void APlayerCharacter::UpdateUI()
 			}
 		}
 	}
+}
+
+bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
+{
+	if (!world) return false;
+
+	//get camera information
+	FVector ViewLocation = _ThirdPersonCameraComponent->GetRelativeLocation();
+	FRotator ViewRotation = _ThirdPersonCameraComponent->GetRelativeRotation();
+
+	FMatrix ViewMatrix = FInverseRotationMatrix(ViewRotation) *FTranslationMatrix(-ViewLocation);
+	float FOV = _ThirdPersonCameraComponent->FieldOfView;
+
+	//Create projection matrix
+	const float AspectRatio = 16.0f / 9.0f;
+	const float NearPlane = GNearClippingPlane;
+	const float FarPlane = 10000.f;
+
+	FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix
+		(FOV * (float)PI / 360.0f, //degrees to radians
+		AspectRatio,
+		NearPlane,
+		FarPlane);
+
+	FConvexVolume Frustrum;
+	GetViewFrustumBounds(Frustrum, ViewMatrix * ProjectionMatrix, false);
+
+	for (TActorIterator<AActor> It(world); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
+		if (!Actor->ActorHasTag("Scannable")) continue;
+
+		FVector Origin;
+		FVector Extent;
+		Actor->GetActorBounds(true, Origin, Extent);
+
+		if (Frustrum.IntersectBox(Origin, Extent))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+			return true;
+		}
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
+
+	return false;
 }
 
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
