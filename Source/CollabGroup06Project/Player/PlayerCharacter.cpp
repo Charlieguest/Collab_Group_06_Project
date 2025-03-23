@@ -11,8 +11,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "DrawDebugHelpers.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
+#include "EngineUtils.h"
+
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -77,7 +80,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 			const FVector2d MoveValue = Instance.Get<FVector2d>();
 			MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 
-			if(MoveValue.Y != 0.0f)
+			if(MoveValue.Y != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
 			{
 				if (bIsCameraOpen)
 				{
@@ -99,7 +102,7 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 				
 			}
 
-			if(MoveValue.X != 0.0f)
+			if(MoveValue.X != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
 			{
 				if (bIsCameraOpen)
 				{
@@ -204,6 +207,7 @@ void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instanc
 {
 	if(bIsCameraOpen)
 	{
+		isAnythingInCameraView(GetWorld());
 		CaptureScreenshot();
 		UpdateUI();
 	}
@@ -212,7 +216,82 @@ void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instanc
 void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 {
 	IInputActionable::Scan_Implementation(Instance);
+
+	if(!_IsScanning &&
+		!_HasFired &&
+		!_SpawnedGrappleGun->_IsGrapplingPlayer &&
+		!_SpawnedGrappleGun->_IsGrapplingBerry)
+	{
+		_IsScanning = true;
+
+		//TODO: Stop Player Movement
+		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+		//TODO: Set Off A Timer To Start Player Movement
+
+		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &APlayerCharacter::ReleasePlayer, 2.0f, false);
+
+		//TODO: Do frustum scan
+
+		//Repeated Code -- once this is complete work out a way call the same function, maybe with the boundaries passed as params
+		
+		FVector ViewLocation = _ThirdPersonCameraComponent->GetRelativeLocation();
+		FRotator ViewRotation = _ThirdPersonCameraComponent->GetRelativeRotation();
+
+		FMatrix ViewMatrix = FInverseRotationMatrix(ViewRotation) *FTranslationMatrix(-ViewLocation);
+		float FOV = _ThirdPersonCameraComponent->FieldOfView;
+
+		//Create projection matrix
+		const float AspectRatio = 16.0f / 9.0f;
+		const float NearPlane = GNearClippingPlane;
+		const float FarPlane = 10000.f;
+
+		FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix
+			(FOV * (float)PI / 360.0f, //degrees to radians
+			AspectRatio,
+			NearPlane,
+			FarPlane);
+
+		FConvexVolume Frustrum;
+		GetViewFrustumBounds(Frustrum, ViewMatrix * ProjectionMatrix, false);
+
+		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+			if (!Actor->WasRecentlyRendered()) continue;
+			if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
+			if (!Actor->ActorHasTag("Scannable")) continue;
+			
+
+			FVector Origin;
+			FVector Extent;
+			Actor->GetActorBounds(true, Origin, Extent);
+			DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
+
+			// Firing Interface in blueprint
+			_Animal = Actor;
+			// Execute interface on each rendered actor
+			SetSpeechBubble();
+			
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+			
+			if (Frustrum.IntersectBox(Origin, Extent))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+			}
+		}
+
+		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in the view innit")));
+
+		//TODO: Execute Interface on the animal if frustrum finds it
+	}
 }
+
+void APlayerCharacter::ReleasePlayer()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	_IsScanning = false;
+}
+
 
 void APlayerCharacter::CaptureScreenshot()
 {
@@ -254,6 +333,57 @@ void APlayerCharacter::UpdateUI()
 			}
 		}
 	}
+}
+
+bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
+{
+	if (!world) return false;
+
+	//get camera information
+	FVector ViewLocation = _ThirdPersonCameraComponent->GetRelativeLocation();
+	FRotator ViewRotation = _ThirdPersonCameraComponent->GetRelativeRotation();
+
+	FMatrix ViewMatrix = FInverseRotationMatrix(ViewRotation) *FTranslationMatrix(-ViewLocation);
+	float FOV = _ThirdPersonCameraComponent->FieldOfView;
+
+	//Create projection matrix
+	const float AspectRatio = 16.0f / 9.0f;
+	const float NearPlane = GNearClippingPlane;
+	const float FarPlane = 10000.f;
+
+	FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix
+		(FOV * (float)PI / 360.0f, //degrees to radians
+		AspectRatio,
+		NearPlane,
+		FarPlane);
+
+	FConvexVolume Frustrum;
+	GetViewFrustumBounds(Frustrum, ViewMatrix * ProjectionMatrix, false);
+
+	for (TActorIterator<AActor> It(world); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
+		if (!Actor->ActorHasTag("Scannable")) continue;
+
+		FVector Origin;
+		FVector Extent;
+		Actor->GetActorBounds(true, Origin, Extent);
+
+		if (Frustrum.IntersectBox(Origin, Extent))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+
+			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+			return true;
+		}
+		
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
+	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
+
+	return false;
 }
 
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
@@ -306,12 +436,12 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 				// Checking if berry to attach berry to character
 				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-				if(berryPickup != nullptr)
+				if(berryPickup != nullptr && !_SpawnedGrappleGun->_HasBerry)
 				{
 
 					//Spawning Berry on GrappleHook as visual reference
 					_SpawnedGrappleGun->AttachBerry();
-
+					
 					IInteract::Execute_interact(OverlappingActors[i]);
 				}
 				
@@ -326,7 +456,6 @@ void APlayerCharacter::GrappleStart()
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Grab Point X: %f, Y: %f, Z: %f"), GrabPoint.X, GrabPoint.Y, GrabPoint.Z));
 	GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * 700);
 }
 
@@ -336,6 +465,10 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+}
+
+void APlayerCharacter::SetSpeechBubble_Implementation()
+{
 }
 
 void APlayerCharacter::Init_Implementation()
