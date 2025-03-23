@@ -20,7 +20,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
+	UPROPERTY(EditAnywhere, Category="Position Override") bool XYOverride = true;
+	UPROPERTY(EditAnywhere, Category="Position Override") bool ZOverride = true;
 public:	
 
 	virtual void PadActive_Implementation() override;
