@@ -81,6 +81,9 @@ public:
 	UFUNCTION()
 	void GrappleEnd();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetSpeechBubble();
+	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
 	/* ------------------------------- */
@@ -151,4 +154,7 @@ public:
 
 	FTimerHandle _PerformScanTimerHandle;
 	bool _IsScanning;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<AActor> _Animal;
 };

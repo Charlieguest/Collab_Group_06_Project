@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "DrawDebugHelpers.h"
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
 #include "EngineUtils.h"
@@ -256,14 +257,23 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 		{
 			AActor* Actor = *It;
+			if (!Actor->WasRecentlyRendered()) continue;
 			if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
 			if (!Actor->ActorHasTag("Scannable")) continue;
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+			
 
 			FVector Origin;
 			FVector Extent;
 			Actor->GetActorBounds(true, Origin, Extent);
+			DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
 
+			// Firing Interface in blueprint
+			_Animal = Actor;
+			// Execute interface on each rendered actor
+			SetSpeechBubble();
+			
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+			
 			if (Frustrum.IntersectBox(Origin, Extent))
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
@@ -362,11 +372,15 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 
 		if (Frustrum.IntersectBox(Origin, Extent))
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+
 			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
 			return true;
 		}
+		
 	}
-	
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
 	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
 
 	return false;
@@ -451,6 +465,10 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+}
+
+void APlayerCharacter::SetSpeechBubble_Implementation()
+{
 }
 
 void APlayerCharacter::Init_Implementation()
