@@ -356,12 +356,12 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 				// Checking if berry to attach berry to character
 				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-				if(berryPickup != nullptr)
+				if(berryPickup != nullptr && !_SpawnedGrappleGun->_HasBerry)
 				{
 
 					//Spawning Berry on GrappleHook as visual reference
 					_SpawnedGrappleGun->AttachBerry();
-
+					
 					IInteract::Execute_interact(OverlappingActors[i]);
 				}
 				
