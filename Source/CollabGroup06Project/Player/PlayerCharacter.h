@@ -82,7 +82,7 @@ public:
 	void GrappleEnd();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void SetSpeechBubble();
+	void ActivateAnimal();
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */

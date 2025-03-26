@@ -217,6 +217,8 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 {
 	IInputActionable::Scan_Implementation(Instance);
 
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("SCANNING")));
+	
 	if(!_IsScanning &&
 		!_HasFired &&
 		!_SpawnedGrappleGun->_IsGrapplingPlayer &&
@@ -265,12 +267,12 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 			FVector Origin;
 			FVector Extent;
 			Actor->GetActorBounds(true, Origin, Extent);
-			DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
+			//DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
 
 			// Firing Interface in blueprint
 			_Animal = Actor;
 			// Execute interface on each rendered actor
-			SetSpeechBubble();
+			ActivateAnimal();
 			
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 			
@@ -467,7 +469,7 @@ void APlayerCharacter::GrappleEnd()
 	}
 }
 
-void APlayerCharacter::SetSpeechBubble_Implementation()
+void APlayerCharacter::ActivateAnimal_Implementation()
 {
 }
 
