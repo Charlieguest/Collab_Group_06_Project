@@ -16,7 +16,6 @@ void AInteractPad_FlyTrap::PadActive_Implementation()
 	Super::PadActive_Implementation();
 	
 	isActive = true;
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Hits")));
+	
 	// Play some animation of the plant moving to an active state
 }
