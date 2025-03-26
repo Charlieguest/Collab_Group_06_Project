@@ -69,6 +69,9 @@ public:
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void Pickup_Berry();
+	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;

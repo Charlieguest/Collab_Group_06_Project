@@ -281,10 +281,6 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 			}
 		}
-
-		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in the view innit")));
-
-		//TODO: Execute Interface on the animal if frustrum finds it
 	}
 }
 
@@ -435,20 +431,30 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				{
 					continue;
 				}
-
-				// Checking if berry to attach berry to character
-				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-				if(berryPickup != nullptr && !_SpawnedGrappleGun->_HasBerry)
-				{
-
-					//Spawning Berry on GrappleHook as visual reference
-					_SpawnedGrappleGun->AttachBerry();
-					
-					IInteract::Execute_interact(OverlappingActors[i]);
-				}
 				
+				// Checking if berry to attach berry to character
+				if(OverlappingActors[i]->ActorHasTag("BerryPickup") && !_SpawnedGrappleGun->_HasBerry)
+				{
+					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
+					berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
+					IInteract::Execute_interact(OverlappingActors[i]);
+					continue;
+				}
+
+				/*
+				if()
+				{
+					
+				}
+				*/
 			}
 		}
+}
+
+void APlayerCharacter::Pickup_Berry()
+{
+	//Spawning Berry on GrappleHook as visual reference
+	_SpawnedGrappleGun->AttachBerry();
 }
 
 void APlayerCharacter::GrappleStart()
