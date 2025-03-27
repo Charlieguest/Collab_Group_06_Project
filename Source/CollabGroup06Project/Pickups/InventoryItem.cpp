@@ -7,11 +7,11 @@ AInventoryItem::AInventoryItem()
 	RootComponent = _Root;
 	
 	_ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pickup Item Mesh"));
-	_ItemMesh->SetupAttachment(RootComponent);
+	_ItemMesh->SetupAttachment(_Root);
+
 }
 
 void AInventoryItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
