@@ -11,6 +11,12 @@ AInventoryItem::AInventoryItem()
 
 }
 
+void AInventoryItem::interact_Implementation()
+{
+	IInteract::interact_Implementation();
+	this->Destroy();
+}
+
 void AInventoryItem::BeginPlay()
 {
 	Super::BeginPlay();

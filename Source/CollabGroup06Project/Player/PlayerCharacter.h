@@ -86,6 +86,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ActivateAnimal();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PickUpInventoryItem(AActor* interactItem);
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */

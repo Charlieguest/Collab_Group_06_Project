@@ -15,6 +15,7 @@
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
 #include "EngineUtils.h"
+#include "CollabGroup06Project/Pickups/InventoryItem.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -440,13 +441,18 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					IInteract::Execute_interact(OverlappingActors[i]);
 					continue;
 				}
-
-				/*
-				if()
+		
+				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
 				{
-					
+					AInventoryItem* InventoryItem = Cast<AInventoryItem>(OverlappingActors[i]);
+					PickUpInventoryItem(InventoryItem);
+					IInteract::Execute_interact(OverlappingActors[i]);
+					continue;
 				}
-				*/
+
+				//Not berry or inventory item but still interactable?
+				//Execute interact
+				IInteract::Execute_interact(OverlappingActors[i]);
 			}
 		}
 }
@@ -478,6 +484,12 @@ void APlayerCharacter::GrappleEnd()
 void APlayerCharacter::ActivateAnimal_Implementation()
 {
 }
+
+void APlayerCharacter::PickUpInventoryItem_Implementation(AActor* interactItem)
+{
+}
+
+
 
 void APlayerCharacter::Init_Implementation()
 {
