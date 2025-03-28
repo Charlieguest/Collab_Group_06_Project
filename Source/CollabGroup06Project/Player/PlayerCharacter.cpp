@@ -15,6 +15,7 @@
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
 #include "EngineUtils.h"
+#include "CollabGroup06Project/UIWidgets/UI_Journal.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -50,12 +51,17 @@ void APlayerCharacter::BeginPlay()
 	if (ScreenshotClass)
 	{
 		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
-		if (ScreenshotWidgetInstance)
-		{
-			ScreenshotWidgetInstance->AddToViewport();
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
+		ScreenshotWidgetInstance->AddToViewport();
+		ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		
 	}
+
+	if (UIJournalClass)
+    	{
+    		UIJournalInstance = CreateWidget<UUserWidget>(GetWorld(), UIJournalClass);
+			UIJournalInstance->AddToViewport();
+			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+    	}
 
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
@@ -73,7 +79,7 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
-	if (!bToggleInput)
+	if (!bToggleInput || !bIsCameraOpen)
 	{	
 		if(Controller != nullptr)
 		{
@@ -82,46 +88,18 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 
 			if(MoveValue.Y != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
 			{
-				if (bIsCameraOpen)
-				{
-					float Min = -200.0f;
-					float Max = 200.0f;
 					
-					FVector NewLocation = _CameraSpringArmComponent->GetRelativeLocation();
-					NewLocation.Y += MoveValue.Y * 10.0f;
-					NewLocation.Y = FMath::Clamp(NewLocation.Y, Min, Max);
-					_CameraSpringArmComponent->SetRelativeLocation(NewLocation);
-					
-				}
-				else
-				{
 					const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
 					AddMovementInput(Direction, MoveValue.Y);
 					GetCapsuleComponent()->SetWorldRotation(MovementRotation);
-				}
 				
 			}
 
 			if(MoveValue.X != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
 			{
-				if (bIsCameraOpen)
-				{
-					float Min = -200.0f;
-					float Max = 200.0f;
-					
-					FVector NewLocation = _CameraSpringArmComponent->GetRelativeLocation();
-					NewLocation.X += MoveValue.X * 10.0f;
-					NewLocation.X = FMath::Clamp(NewLocation.X, Min, Max);
-					_CameraSpringArmComponent->SetRelativeLocation(NewLocation);
-					
-				}
-				
-				else
-				{
 					const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
 					AddMovementInput(Direction, MoveValue.X);
 					GetCapsuleComponent()->SetWorldRotation(MovementRotation);
-				}
 			}
 		}
 	}
@@ -137,8 +115,7 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 		{
 			FRotator CurrentRotation = Controller->GetControlRotation();
 			FRotator TargetRotation = FRotator(0.0f, CurrentRotation.Yaw, 0.0f);
-			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 5.0f);
-			Controller->SetControlRotation(NewRotation);
+			Controller->SetControlRotation(TargetRotation);
 		}
 	}
 	else
@@ -188,6 +165,10 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 		
 		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthCam;
 		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		FVector NewLocation = GetActorLocation();
+		PreviousLocation = GetActorLocation();
+		NewLocation.Z =+ 195.0f;
+		SetActorLocation(NewLocation);
 		
 	}
 	else
@@ -196,9 +177,10 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 		
 		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
 		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		SetActorLocation(PreviousLocation);
 		if (ScreenshotWidgetInstance)
 		{
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }
@@ -207,9 +189,18 @@ void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instanc
 {
 	if(bIsCameraOpen)
 	{
-		isAnythingInCameraView(GetWorld());
-		CaptureScreenshot();
-		UpdateUI();
+	  isAnythingInCameraView(GetWorld());
+	}
+	else
+	{
+		if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
+		{
+			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
 }
 
@@ -279,6 +270,7 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 			if (Frustrum.IntersectBox(Origin, Extent))
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+				
 			}
 		}
 
@@ -313,11 +305,11 @@ UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 	}
 
 	// Load image as texture
-	UE_LOG(LogTemp, Warning, TEXT("Importing text"));
+	UE_LOG(LogTemp, Warning, TEXT("Importing texture"));
 	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, ScreenshotPath);
 }
 
-void APlayerCharacter::UpdateUI()
+void APlayerCharacter::UpdateUI(FString animalType)
 {
 	if (ScreenshotWidgetInstance)
 	{
@@ -332,6 +324,25 @@ void APlayerCharacter::UpdateUI()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Image being changed"));
 				TestUI->SetImage(ScreenshotTexture);
+			}
+		}
+	}
+
+	if (UIJournalInstance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
+		UUI_Journal* Journal = Cast<UUI_Journal>(UIJournalInstance);
+		if (Journal)
+		{
+			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
+			
+			if (ScreenshotTexture)
+			{
+				if (animalType == TEXT("Deer"))
+				{
+					Journal->SetImage(Journal->Deer, ScreenshotTexture);
+				}
+				
 			}
 		}
 	}
@@ -365,6 +376,7 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 	for (TActorIterator<AActor> It(world); It; ++It)
 	{
 		AActor* Actor = *It;
+		if (!Actor->WasRecentlyRendered()) continue;
 		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
 		if (!Actor->ActorHasTag("Scannable")) continue;
 
@@ -377,6 +389,11 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 
 			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+			CaptureScreenshot();
+			if (Actor->ActorHasTag("Deer"))
+			{
+				UpdateUI("Deer");
+			}
 			return true;
 		}
 		
