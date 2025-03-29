@@ -177,7 +177,6 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
 	//Executing blueprint functionality
 	InventoryBPAction();
 }
