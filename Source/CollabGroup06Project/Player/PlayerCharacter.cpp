@@ -175,6 +175,13 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
+void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
+	//Executing blueprint functionality
+	InventoryBPAction();
+}
+
 void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
 {
 	bIsCameraOpen = !bIsCameraOpen;
@@ -489,7 +496,9 @@ void APlayerCharacter::PickUpInventoryItem_Implementation(AActor* interactItem)
 {
 }
 
-
+void APlayerCharacter::InventoryBPAction_Implementation()
+{
+}
 
 void APlayerCharacter::Init_Implementation()
 {

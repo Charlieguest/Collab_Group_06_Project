@@ -35,6 +35,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -89,6 +91,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void PickUpInventoryItem(AActor* interactItem);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InventoryBPAction();
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
