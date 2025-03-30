@@ -7,6 +7,8 @@
 
 class USphereComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBerryPickedup);
+
 UCLASS()
 class COLLABGROUP06PROJECT_API ABerryPickup : public AActor, public IInteract
 {
@@ -21,6 +23,8 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> _CollisionComponent;
+	
+	FOnBerryPickedup _OnPickedUp;
 	
 protected:
 	virtual void BeginPlay() override;
