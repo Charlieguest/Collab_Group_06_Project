@@ -16,6 +16,7 @@
 #include "Components/SphereComponent.h"
 #include "EngineUtils.h"
 #include "CollabGroup06Project/UIWidgets/UI_Journal.h"
+#include "CollabGroup06Project/Pickups/InventoryItem.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -149,6 +150,12 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	{
 		Super::Jump();
 	}
+}
+
+void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
+{
+	//Executing Blueprint Functionality
+	InventoryBPAction();
 }
 
 void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
@@ -454,18 +461,34 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				}
 
 				// Checking if berry to attach berry to character
-				ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-				if(berryPickup != nullptr && !_SpawnedGrappleGun->_HasBerry)
+				if(OverlappingActors[i]->ActorHasTag("BerryPickup") && !_SpawnedGrappleGun->_HasBerry)
 				{
 
-					//Spawning Berry on GrappleHook as visual reference
-					_SpawnedGrappleGun->AttachBerry();
-					
+					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
+					berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
 					IInteract::Execute_interact(OverlappingActors[i]);
+					continue;
 				}
-				
+
+				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
+				{
+					AInventoryItem* InventoryItem = Cast<AInventoryItem>(OverlappingActors[i]);
+					PickUpInventoryItem(InventoryItem);
+					IInteract::Execute_interact(OverlappingActors[i]);
+					continue;
+				}
+
+				//Not berry or inventory item but still interable?
+				//Execute Interact
+				IInteract::Execute_interact(OverlappingActors[i]);
 			}
 		}
+}
+
+void APlayerCharacter::Pickup_Berry()
+{
+	//Spawning Berry on GrappleHook as visual reference
+	_SpawnedGrappleGun->AttachBerry();
 }
 
 void APlayerCharacter::GrappleStart()
@@ -484,6 +507,14 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+}
+
+void APlayerCharacter::PickUpInventoryItem_Implementation(AActor* interactItem)
+{
+}
+
+void APlayerCharacter::InventoryBPAction_Implementation()
+{
 }
 
 void APlayerCharacter::ActivateAnimal_Implementation()
