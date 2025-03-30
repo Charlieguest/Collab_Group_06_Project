@@ -35,6 +35,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -54,7 +56,7 @@ public:
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void UpdateUI();
+	void UpdateUI(FString animalType);
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
@@ -69,6 +71,9 @@ public:
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void Pickup_Berry();
+	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;
@@ -82,7 +87,13 @@ public:
 	void GrappleEnd();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void SetSpeechBubble();
+	void ActivateAnimal();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PickUpInventoryItem(AActor* interactItem);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InventoryBPAction();
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
@@ -129,10 +140,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	bool bToggleInput = false;
 
-	//Testing UI for screenshotting
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	FVector PreviousLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	FString ScannedAnimal;
+
+	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> ScreenshotClass;
 	UUserWidget* ScreenshotWidgetInstance;
+
+	//Journal UI
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> UIJournalClass;
+	UUserWidget* UIJournalInstance;
 
 	/* ------------------------------- */
 	/* ---- Grapple Components ------- */

@@ -24,6 +24,9 @@ public:
 	TSoftObjectPtr<UInputAction> ToggleCamera;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftObjectPtr<UInputAction> ToggleInventory;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSoftObjectPtr<UInputAction> TakePhoto;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
