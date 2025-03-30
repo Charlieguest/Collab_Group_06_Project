@@ -11,6 +11,7 @@ ABerryPickup::ABerryPickup()
 void ABerryPickup::interact_Implementation()
 {
 	IInteract::interact_Implementation();
+	_OnPickedUp.Broadcast();
 	Destroy();
 }
 
