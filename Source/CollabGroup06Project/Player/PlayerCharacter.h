@@ -35,6 +35,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -69,6 +71,9 @@ public:
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void Pickup_Berry();
+	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;
@@ -83,6 +88,12 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ActivateAnimal();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PickUpInventoryItem(AActor* interactItem);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InventoryBPAction();
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
