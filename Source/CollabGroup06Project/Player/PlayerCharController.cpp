@@ -36,6 +36,7 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->Move.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Move);
 			PEI->BindAction(_InputActions->Look.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Look);
 			PEI->BindAction(_InputActions->ToggleCamera.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_CameraToggle);
+			PEI->BindAction(_InputActions->ToggleInventory.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_InventoryToggle);
 			PEI->BindAction(_InputActions->TakePhoto.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_TakePhoto);
 			PEI->BindAction(_InputActions->Scan.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Scan);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
@@ -106,6 +107,14 @@ void APlayerCharController::CAM_CameraToggle(const FInputActionValue& Instance)
 	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
 	{
 		IInputActionable::Execute_ToggleCamera(_PlayerPawn, Instance);
+	}
+}
+
+void APlayerCharController::CAM_InventoryToggle(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_ToggleInventory(_PlayerPawn, Instance);
 	}
 }
 
