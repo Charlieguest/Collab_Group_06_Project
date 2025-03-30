@@ -40,6 +40,8 @@ public:
 	void CAM_Look(const FInputActionValue& Instance);
 	
 	void CAM_CameraToggle(const FInputActionValue& Instance);
+	
+	void CAM_InventoryToggle(const FInputActionValue& Instance);
 
 	void CAM_TakePhoto(const FInputActionValue& Instance);
 
@@ -50,6 +52,7 @@ public:
 	void CAM_CompletePrimaryInteract(const FInputActionValue& Instance);
 
 	void CAM_SecondaryInteract(const FInputActionValue& Instance);
+
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
@@ -62,5 +65,4 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UInputAssets> _InputActions;
-
 };
