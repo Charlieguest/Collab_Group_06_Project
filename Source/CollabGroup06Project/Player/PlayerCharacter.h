@@ -54,7 +54,7 @@ public:
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void UpdateUI();
+	void UpdateUI(FString animalType);
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
@@ -129,10 +129,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	bool bToggleInput = false;
 
-	//Testing UI for screenshotting
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	FVector PreviousLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	FString ScannedAnimal;
+
+	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> ScreenshotClass;
 	UUserWidget* ScreenshotWidgetInstance;
+
+	//Journal UI
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> UIJournalClass;
+	UUserWidget* UIJournalInstance;
 
 	/* ------------------------------- */
 	/* ---- Grapple Components ------- */
