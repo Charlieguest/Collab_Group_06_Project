@@ -401,6 +401,7 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 			if (Actor->ActorHasTag("Deer"))
 			{
 				UpdateUI("Deer");
+				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Deer in view")));
 			}
 			return true;
 		}
@@ -483,8 +484,12 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				{
 					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
 					SearchInventory(*Creature->_RequiredItemName);
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%s"), *Creature->_RequiredItemName));
-					IInteract::Execute_interact(OverlappingActors[i]);
+					
+					if(_RequiredItemFound)
+					{
+						// Setting animal as photographable 
+						IInteract::Execute_interact(OverlappingActors[i]);
+					}
 					continue;
 				}
 

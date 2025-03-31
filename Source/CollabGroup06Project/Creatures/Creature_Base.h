@@ -18,6 +18,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FString _RequiredItemName;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool _IsPhotographable;
+
 protected:
 	virtual void BeginPlay() override;
 
