@@ -109,18 +109,6 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 {
-	if (bIsCameraOpen)
-	{
-		
-		if(Controller != nullptr)
-		{
-			FRotator CurrentRotation = Controller->GetControlRotation();
-			FRotator TargetRotation = FRotator(0.0f, CurrentRotation.Yaw, 0.0f);
-			Controller->SetControlRotation(TargetRotation);
-		}
-	}
-	else
-	{
 		if(Controller != nullptr)
 		{
 			const FVector2d AxisValue = Instance.Get<FVector2d>();
@@ -134,9 +122,7 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 			{
 				AddControllerYawInput(AxisValue.X);
 			}
-		
 		}
-	}
 	
 }
 
@@ -349,6 +335,34 @@ void APlayerCharacter::UpdateUI(FString animalType)
 				{
 					Journal->SetImage(Journal->Deer, ScreenshotTexture);
 				}
+				if (animalType == TEXT("Beetle"))
+				{
+					Journal->SetImage(Journal->Beetle, ScreenshotTexture);
+				}
+				if (animalType == TEXT("Lizard"))
+				{
+					Journal->SetImage(Journal->Lizard, ScreenshotTexture);
+				}
+				if (animalType == TEXT("Snail"))
+				{
+					Journal->SetImage(Journal->Snail, ScreenshotTexture);
+				}
+				if (animalType == TEXT("BerryBird"))
+				{
+					Journal->SetImage(Journal->BerryBird, ScreenshotTexture);
+				}
+				if (animalType == TEXT("GroundCreature"))
+				{
+					Journal->SetImage(Journal->GroundCreature, ScreenshotTexture);
+				}
+				if (animalType == TEXT("LargeCreature"))
+				{
+					Journal->SetImage(Journal->LargeCreature, ScreenshotTexture);
+				}
+				if (animalType == TEXT("RockCreature"))
+				{
+					Journal->SetImage(Journal->RockCreature, ScreenshotTexture);
+				}
 				
 			}
 		}
@@ -400,6 +414,30 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 			if (Actor->ActorHasTag("Deer"))
 			{
 				UpdateUI("Deer");
+			}
+			if (Actor->ActorHasTag("Lizard"))
+			{
+				UpdateUI("Lizard");
+			}
+			if (Actor->ActorHasTag("Snail"))
+			{
+				UpdateUI("Snail");
+			}
+			if (Actor->ActorHasTag("BerryBird"))
+			{
+				UpdateUI("BerryBird");
+			}
+			if (Actor->ActorHasTag("GroundCreature"))
+			{
+				UpdateUI("GroundCreature");
+			}
+			if (Actor->ActorHasTag("LargeCreature"))
+			{
+				UpdateUI("LargeCreature");
+			}
+			if (Actor->ActorHasTag("RockCreature"))
+			{
+				UpdateUI("RockCreature");
 			}
 			return true;
 		}
