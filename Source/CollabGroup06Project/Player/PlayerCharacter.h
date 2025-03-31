@@ -94,6 +94,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InventoryBPAction();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SearchInventory(const FString& requiredItem);
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */

@@ -15,6 +15,7 @@
 #include "CollabGroup06Project/UIWidgets/DispalyScreenshots.h"
 #include "Components/SphereComponent.h"
 #include "EngineUtils.h"
+#include "CollabGroup06Project/Creatures/Creature_Base.h"
 #include "CollabGroup06Project/UIWidgets/UI_Journal.h"
 #include "CollabGroup06Project/Pickups/InventoryItem.h"
 
@@ -478,7 +479,15 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					continue;
 				}
 
-				//Not berry or inventory item but still interable?
+				if(OverlappingActors[i]->ActorHasTag("Scannable"))
+				{
+					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
+					SearchInventory(*Creature->_RequiredItemName);
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%s"), *Creature->_RequiredItemName));
+					continue;
+				}
+
+				//Not berry or inventory item but still interactable?
 				//Execute Interact
 				IInteract::Execute_interact(OverlappingActors[i]);
 			}
@@ -507,6 +516,11 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+}
+
+void APlayerCharacter::SearchInventory_Implementation(const FString& requiredItem)
+{
+	
 }
 
 void APlayerCharacter::PickUpInventoryItem_Implementation(AActor* interactItem)
