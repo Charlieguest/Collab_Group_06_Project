@@ -484,6 +484,7 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
 					SearchInventory(*Creature->_RequiredItemName);
 					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%s"), *Creature->_RequiredItemName));
+					IInteract::Execute_interact(OverlappingActors[i]);
 					continue;
 				}
 
