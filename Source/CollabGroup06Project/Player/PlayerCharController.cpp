@@ -67,6 +67,8 @@ void APlayerCharController::Handle_MatchStarted_Implementation()
 	{
 		//TODO: Bind to any relevant events
 		castedPawn->Init();
+		
+		this->SetViewTarget(castedPawn);
 		//castedPawn->SetActorLocation(FVector(0.0f, 0.0f, 10.0f));
 	}
 	

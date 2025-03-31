@@ -60,6 +60,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
+	
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
