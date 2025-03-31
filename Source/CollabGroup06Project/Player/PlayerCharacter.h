@@ -158,6 +158,12 @@ public:
 	TSubclassOf<UUserWidget> UIJournalClass;
 	UUserWidget* UIJournalInstance;
 
+	//Screenshot file number
+	int screenshotNum;
+	
+	FTimerHandle _UpdateUIDelayTimer;
+	FTimerDelegate _UpdateUIDelayDelegate;
+
 	/* ------------------------------- */
 	/* ---- Grapple Components ------- */
 	/* ------------------------------- */

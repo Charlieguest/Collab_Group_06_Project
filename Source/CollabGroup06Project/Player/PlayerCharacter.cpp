@@ -1,5 +1,7 @@
 ﻿#include "PlayerCharacter.h"
 
+#include <string>
+
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
@@ -282,6 +284,7 @@ void APlayerCharacter::ReleasePlayer()
 
 void APlayerCharacter::CaptureScreenshot()
 {
+	//FString ScreenshotName = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
 	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
 	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
@@ -290,6 +293,7 @@ void APlayerCharacter::CaptureScreenshot()
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 {
 	FString ScreenshotPath = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
+	//FString ScreenshotPath = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
 
 	if (!FPaths::FileExists(ScreenshotPath))
 	{
@@ -367,6 +371,8 @@ void APlayerCharacter::UpdateUI(FString animalType)
 			}
 		}
 	}
+
+	screenshotNum++;
 }
 
 bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
@@ -381,7 +387,6 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
 		if (!Actor->ActorHasTag("Scannable")) continue;
 		
-		
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 
 			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
@@ -390,7 +395,10 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 		
 			if (Actor->ActorHasTag("Deer"))
 			{
-				UpdateUI("Deer");
+				FString Tag = "Deer";
+				_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag);
+				GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
+				//UpdateUI("Deer");
 			}
 			if (Actor->ActorHasTag("Lizard"))
 			{

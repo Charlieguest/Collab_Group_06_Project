@@ -60,6 +60,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<APawn> _PlayerPawn;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector _PlayerSpawnLoc;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float _PlayerSpawnRotY;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=InputMapping, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* _InputMappingContext;
 
