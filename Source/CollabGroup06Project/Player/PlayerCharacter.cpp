@@ -90,11 +90,9 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 
 			if(MoveValue.Y != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
 			{
-					
 					const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
 					AddMovementInput(Direction, MoveValue.Y);
 					GetCapsuleComponent()->SetWorldRotation(MovementRotation);
-				
 			}
 
 			if(MoveValue.X != 0.0f && GetCharacterMovement()->MaxWalkSpeed > 0)
@@ -465,7 +463,6 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				// Checking if berry to attach berry to character
 				if(OverlappingActors[i]->ActorHasTag("BerryPickup") && !_SpawnedGrappleGun->_HasBerry)
 				{
-
 					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
 					berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
 					IInteract::Execute_interact(OverlappingActors[i]);
@@ -483,7 +480,7 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				if(OverlappingActors[i]->ActorHasTag("Scannable"))
 				{
 					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
-					SearchInventory(*Creature->_RequiredItemName);
+					SearchInventory(*Creature->_RequiredItemName, true);
 					
 					if(_RequiredItemFound)
 					{
@@ -495,7 +492,10 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 				//Not berry or inventory item but still interactable?
 				//Execute Interact
-				IInteract::Execute_interact(OverlappingActors[i]);
+				if(!OverlappingActors[i]->ActorHasTag("BerryPickup"))
+				{
+					IInteract::Execute_interact(OverlappingActors[i]);
+				}
 			}
 		}
 }
@@ -524,9 +524,8 @@ void APlayerCharacter::GrappleEnd()
 	}
 }
 
-void APlayerCharacter::SearchInventory_Implementation(const FString& requiredItem)
+void APlayerCharacter::SearchInventory_Implementation(const FString& requiredItem, bool isInteracting)
 {
-	
 }
 
 void APlayerCharacter::PickUpInventoryItem_Implementation(AActor* interactItem)

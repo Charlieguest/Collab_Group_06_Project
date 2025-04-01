@@ -99,8 +99,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void InventoryBPAction();
 
-	UFUNCTION(BlueprintNativeEvent)
-	void SearchInventory(const FString& requiredItem);
+	UFUNCTION(BlueprintNativeEvent, CallInEditor)
+	void SearchInventory(const FString& requiredItem, bool isInteracting);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _RequiredItemFound;
