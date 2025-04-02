@@ -91,11 +91,21 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ActivateAnimal();
 
+	/* --------------------------------------- */
+	/* ---- Inventory Blueprint Functions ---- */
+	/* --------------------------------------- */
+
 	UFUNCTION(BlueprintNativeEvent)
 	void PickUpInventoryItem(AActor* interactItem);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InventoryBPAction();
+
+	UFUNCTION(BlueprintNativeEvent, CallInEditor)
+	void SearchInventory(const FString& requiredItem, bool isInteracting);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool _RequiredItemFound;
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
