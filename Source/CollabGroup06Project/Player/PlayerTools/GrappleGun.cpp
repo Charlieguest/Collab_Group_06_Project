@@ -100,6 +100,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	
 	if(BerryPickup != nullptr)
 	{
+		DestroyGrappleProjectile();
 		_IsGrapplingBerry = true;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(OtherActor->GetActorLocation());
 		_Cable->SetVisibility(true);
