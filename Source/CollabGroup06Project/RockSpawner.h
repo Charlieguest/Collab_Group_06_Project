@@ -30,6 +30,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, Category = "RockSpawner")
 	void SpawnChosenActor();
+	virtual void SpawnChosenActor_Implementation();
 };

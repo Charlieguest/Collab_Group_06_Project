@@ -28,6 +28,8 @@ void ARockSpawner::Tick(float DeltaTime)
 
 }
 
+
+
 void ARockSpawner::SpawnChosenActor_Implementation()
 {
 	for (int i = 0; i < iterations; i++)
