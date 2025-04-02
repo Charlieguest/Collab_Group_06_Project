@@ -25,10 +25,10 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere, Category="Collider Object") TObjectPtr<UBoxComponent> _CollisionComp;;
 	
-	UPROPERTY(EditAnywhere, Category="Launch Velocity") int32 M_LaunchVelocity = 750;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Launch Velocity") int32 M_LaunchVelocity = 750;
 	//Positional overrides for the launching of the character
-	UPROPERTY(EditAnywhere, Category="Position Override") bool XYOverride = false;
-	UPROPERTY(EditAnywhere, Category="Position Override") bool ZOverride = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Position Override") bool XYOverride = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Position Override") bool ZOverride = true;
 public:	
 	UFUNCTION()
 	virtual void PadActive_Implementation() override;
