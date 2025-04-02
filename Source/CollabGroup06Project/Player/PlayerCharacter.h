@@ -8,6 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 
+class ACreature_Base;
 class APlayerBerry;
 class USphereComponent;
 class USpringArmComponent;
@@ -56,10 +57,12 @@ public:
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void UpdateUI(FString animalType);
+	void UpdateUI(FString animalType, ACreature_Base* creatureBase);
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
+	
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -89,11 +92,21 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ActivateAnimal();
 
+	/* --------------------------------------- */
+	/* ---- Inventory Blueprint Functions ---- */
+	/* --------------------------------------- */
+
 	UFUNCTION(BlueprintNativeEvent)
 	void PickUpInventoryItem(AActor* interactItem);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InventoryBPAction();
+
+	UFUNCTION(BlueprintNativeEvent, CallInEditor)
+	void SearchInventory(const FString& requiredItem, bool isInteracting);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool _RequiredItemFound;
 	
 	/* ------------------------------- */
 	/* ------ Scan Functions --------- */
@@ -155,6 +168,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> UIJournalClass;
 	UUserWidget* UIJournalInstance;
+
+	//Screenshot file number
+	int screenshotNum;
+	
+	FTimerHandle _UpdateUIDelayTimer;
+	FTimerDelegate _UpdateUIDelayDelegate;
 
 	/* ------------------------------- */
 	/* ---- Grapple Components ------- */
