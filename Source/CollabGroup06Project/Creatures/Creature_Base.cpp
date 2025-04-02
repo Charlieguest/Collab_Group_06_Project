@@ -2,7 +2,7 @@
 
 ACreature_Base::ACreature_Base()
 {
-
+	_IsPhotographable = false;
 }
 
 void ACreature_Base::interact_Implementation()

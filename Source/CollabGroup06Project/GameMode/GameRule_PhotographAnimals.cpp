@@ -28,7 +28,8 @@ void UGameRule_PhotographAnimals::Init()
 
 	for(ACreature_Base* creature : _Creatures)
 	{
-		//Bind to relevant events 
+		//Bind to relevant events
+		creature->OnAnimalPhotographed.AddUniqueDynamic(this, &UGameRule_PhotographAnimals::Handle_Photographed);
 	}
 }
 
@@ -37,7 +38,14 @@ void UGameRule_PhotographAnimals::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UGameRule_PhotographAnimals::Handle_Photographed(ACreature_Base* animal, AController* causer)
+void UGameRule_PhotographAnimals::Handle_Photographed()
 {
-	
+	_CreaturesRemaining--;
+
+	if(_CreaturesRemaining == 0)
+	{
+		BroadcastGameRuleComplete();
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Black,
+FString::Printf(TEXT("No more Creatures left in world to photograph")));
+	}
 }

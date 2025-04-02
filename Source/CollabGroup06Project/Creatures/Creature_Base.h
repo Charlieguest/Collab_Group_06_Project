@@ -5,6 +5,8 @@
 #include "GameFramework/Character.h"
 #include "Creature_Base.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAnimalPhotographedSignature);
+
 UCLASS()
 class COLLABGROUP06PROJECT_API ACreature_Base : public ACharacter, public IInteract
 {
@@ -20,6 +22,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool _IsPhotographable;
+
+	FAnimalPhotographedSignature OnAnimalPhotographed;
 
 protected:
 	virtual void BeginPlay() override;

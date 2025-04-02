@@ -163,7 +163,6 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 		PreviousLocation = GetActorLocation();
 		NewLocation.Z =+ 195.0f;
 		SetActorLocation(NewLocation);
-		
 	}
 	else
 	{
@@ -283,7 +282,6 @@ void APlayerCharacter::ReleasePlayer()
 
 void APlayerCharacter::CaptureScreenshot()
 {
-	//FString ScreenshotName = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
 	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
 	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
@@ -292,8 +290,7 @@ void APlayerCharacter::CaptureScreenshot()
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 {
 	FString ScreenshotPath = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
-	//FString ScreenshotPath = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
-
+	
 	if (!FPaths::FileExists(ScreenshotPath))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot not found : %s"), *ScreenshotPath);
@@ -305,7 +302,7 @@ UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, ScreenshotPath);
 }
 
-void APlayerCharacter::UpdateUI(FString animalType)
+void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
 {
 	if (ScreenshotWidgetInstance)
 	{
@@ -324,13 +321,14 @@ void APlayerCharacter::UpdateUI(FString animalType)
 		}
 	}
 
-	if (UIJournalInstance)
+	if (UIJournalInstance && animal->_IsPhotographable)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
 		UUI_Journal* Journal = Cast<UUI_Journal>(UIJournalInstance);
 		if (Journal)
 		{
 			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
+			animal->OnAnimalPhotographed.Broadcast();
 			
 			if (ScreenshotTexture)
 			{
@@ -366,7 +364,6 @@ void APlayerCharacter::UpdateUI(FString animalType)
 				{
 					Journal->SetImage(Journal->RockCreature, ScreenshotTexture);
 				}
-				
 			}
 		}
 	}
@@ -389,44 +386,56 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 
 			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+
+			//Need reference to the animals photograph status
+			ACreature_Base* animal = Cast<ACreature_Base>(Actor);
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
 		
 			CaptureScreenshot();
+
+			FString Tag;
 		
 			if (Actor->ActorHasTag("Deer"))
 			{
-				FString Tag = "Deer";
-				_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag);
-				GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
-				//UpdateUI("Deer");
+				Tag = "Deer";
 			}
-			if (Actor->ActorHasTag("Lizard"))
+			else if (Actor->ActorHasTag("Lizard"))
 			{
-				UpdateUI("Lizard");
+				Tag = "Lizard";
 			}
-			if (Actor->ActorHasTag("Snail"))
+			else if (Actor->ActorHasTag("Snail"))
 			{
-				UpdateUI("Snail");
+				Tag = "Snail";
 			}
-			if (Actor->ActorHasTag("BerryBird"))
+			else if (Actor->ActorHasTag("BerryBird"))
 			{
-				UpdateUI("BerryBird");
+				Tag = "BerryBird";
 			}
-			if (Actor->ActorHasTag("GroundCreature"))
+			else if (Actor->ActorHasTag("GroundCreature"))
 			{
-				UpdateUI("GroundCreature");
+				Tag = "GroundCreature";
 			}
-			if (Actor->ActorHasTag("LargeCreature"))
+			else if (Actor->ActorHasTag("LargeCreature"))
 			{
-				UpdateUI("LargeCreature");
+				Tag = "LargeCreature";
 			}
-			if (Actor->ActorHasTag("RockCreature"))
+			else if (Actor->ActorHasTag("RockCreature"))
 			{
-				UpdateUI("RockCreature");
+				Tag = "RockCreature";
 			}
-			if (Actor->ActorHasTag("Beetle"))
+			else if (Actor->ActorHasTag("Beetle"))
 			{
-				UpdateUI("Beetle");
+				Tag = "Beetle";
 			}
+			else
+			{
+				Tag = "Error : Creature Tag not set";
+				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
+			}
+
+			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag, animal);
+			GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
+
 			return true;
 		}
 
@@ -509,14 +518,14 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 					if(_RequiredItemFound)
 					{
-						// Setting animal as photographable 
+						// Setting animal as "photographable" 
 						IInteract::Execute_interact(OverlappingActors[i]);
 					}
 					continue;
 				}
 				
 
-				//Not berry or inventory item but still interable?
+				//Not berry or inventory item but still interactable?
 				//Execute Interact
 				if(!OverlappingActors[i]->ActorHasTag("BerryPickup"))
 				{

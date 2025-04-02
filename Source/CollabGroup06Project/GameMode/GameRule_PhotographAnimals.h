@@ -28,5 +28,5 @@ protected:
 	TArray<TObjectPtr<ACreature_Base>> _Creatures;
 
 	UFUNCTION()
-	void Handle_Photographed(class ACreature_Base* animal, AController* causer);
+	void Handle_Photographed();
 };

@@ -8,6 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 
+class ACreature_Base;
 class APlayerBerry;
 class USphereComponent;
 class USpringArmComponent;
@@ -56,7 +57,7 @@ public:
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void UpdateUI(FString animalType);
+	void UpdateUI(FString animalType, ACreature_Base* creatureBase);
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
