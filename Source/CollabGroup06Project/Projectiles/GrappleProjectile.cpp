@@ -37,25 +37,25 @@ void AGrappleProjectile::BeginPlay()
 void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-
-	ABerryPickup* BerryPickup = Cast<ABerryPickup>(OtherActor);
-
-	if(BerryPickup != nullptr)
-	{
-		Destroy();
-	}
-	else
-	{
-		if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
+/*
+	*ABerryPickup* BerryPickup = Cast<ABerryPickup>(OtherActor);
+	
+		if(BerryPickup != nullptr)
 		{
-			OnRemoveBerry.Broadcast();
-			
-			IPadInteractable::Execute_PadActive(OtherActor);
+			Destroy();
 		}
+ */
+
+	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
+	{
+		OnRemoveBerry.Broadcast();
 		
-		CollisionComp->SetSimulatePhysics(false);
-		CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+		IPadInteractable::Execute_PadActive(OtherActor);
 	}
+	
+	CollisionComp->SetSimulatePhysics(false);
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+
 
 }
 
