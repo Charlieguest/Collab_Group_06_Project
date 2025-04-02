@@ -60,6 +60,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
+	
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -155,6 +157,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> UIJournalClass;
 	UUserWidget* UIJournalInstance;
+
+	//Screenshot file number
+	int screenshotNum;
+	
+	FTimerHandle _UpdateUIDelayTimer;
+	FTimerDelegate _UpdateUIDelayDelegate;
 
 	/* ------------------------------- */
 	/* ---- Grapple Components ------- */

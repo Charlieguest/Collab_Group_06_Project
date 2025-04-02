@@ -1,5 +1,7 @@
 ﻿#include "PlayerCharacter.h"
 
+#include <string>
+
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
@@ -109,18 +111,6 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 {
-	if (bIsCameraOpen)
-	{
-		
-		if(Controller != nullptr)
-		{
-			FRotator CurrentRotation = Controller->GetControlRotation();
-			FRotator TargetRotation = FRotator(0.0f, CurrentRotation.Yaw, 0.0f);
-			Controller->SetControlRotation(TargetRotation);
-		}
-	}
-	else
-	{
 		if(Controller != nullptr)
 		{
 			const FVector2d AxisValue = Instance.Get<FVector2d>();
@@ -134,9 +124,7 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 			{
 				AddControllerYawInput(AxisValue.X);
 			}
-		
 		}
-	}
 	
 }
 
@@ -296,6 +284,7 @@ void APlayerCharacter::ReleasePlayer()
 
 void APlayerCharacter::CaptureScreenshot()
 {
+	//FString ScreenshotName = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
 	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
 	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
@@ -304,6 +293,7 @@ void APlayerCharacter::CaptureScreenshot()
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 {
 	FString ScreenshotPath = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
+	//FString ScreenshotPath = FPaths::ProjectSavedDir() +  FString::Printf(TEXT("Screenshots/Screenshot%d.png"), screenshotNum);
 
 	if (!FPaths::FileExists(ScreenshotPath))
 	{
@@ -349,36 +339,46 @@ void APlayerCharacter::UpdateUI(FString animalType)
 				{
 					Journal->SetImage(Journal->Deer, ScreenshotTexture);
 				}
+				if (animalType == TEXT("Beetle"))
+				{
+					Journal->SetImage(Journal->Beetle, ScreenshotTexture);
+				}
+				if (animalType == TEXT("Lizard"))
+				{
+					Journal->SetImage(Journal->Lizard, ScreenshotTexture);
+				}
+				if (animalType == TEXT("Snail"))
+				{
+					Journal->SetImage(Journal->Snail, ScreenshotTexture);
+				}
+				if (animalType == TEXT("BerryBird"))
+				{
+					Journal->SetImage(Journal->BerryBird, ScreenshotTexture);
+				}
+				if (animalType == TEXT("GroundCreature"))
+				{
+					Journal->SetImage(Journal->GroundCreature, ScreenshotTexture);
+				}
+				if (animalType == TEXT("LargeCreature"))
+				{
+					Journal->SetImage(Journal->LargeCreature, ScreenshotTexture);
+				}
+				if (animalType == TEXT("RockCreature"))
+				{
+					Journal->SetImage(Journal->RockCreature, ScreenshotTexture);
+				}
 				
 			}
 		}
 	}
+
+	screenshotNum++;
 }
 
 bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 {
 	if (!world) return false;
-
-	//get camera information
-	FVector ViewLocation = _ThirdPersonCameraComponent->GetRelativeLocation();
-	FRotator ViewRotation = _ThirdPersonCameraComponent->GetRelativeRotation();
-
-	FMatrix ViewMatrix = FInverseRotationMatrix(ViewRotation) *FTranslationMatrix(-ViewLocation);
-	float FOV = _ThirdPersonCameraComponent->FieldOfView;
-
-	//Create projection matrix
-	const float AspectRatio = 16.0f / 9.0f;
-	const float NearPlane = GNearClippingPlane;
-	const float FarPlane = 10000.f;
-
-	FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix
-		(FOV * (float)PI / 360.0f, //degrees to radians
-		AspectRatio,
-		NearPlane,
-		FarPlane);
-
-	FConvexVolume Frustrum;
-	GetViewFrustumBounds(Frustrum, ViewMatrix * ProjectionMatrix, false);
+	
 
 	for (TActorIterator<AActor> It(world); It; ++It)
 	{
@@ -386,31 +386,57 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 		if (!Actor->WasRecentlyRendered()) continue;
 		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
 		if (!Actor->ActorHasTag("Scannable")) continue;
-
-		FVector Origin;
-		FVector Extent;
-		Actor->GetActorBounds(true, Origin, Extent);
-
-		if (Frustrum.IntersectBox(Origin, Extent))
-		{
+		
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 
 			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+		
 			CaptureScreenshot();
+		
 			if (Actor->ActorHasTag("Deer"))
 			{
-				UpdateUI("Deer");
+				FString Tag = "Deer";
+				_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag);
+				GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
+				//UpdateUI("Deer");
+			}
+			if (Actor->ActorHasTag("Lizard"))
+			{
+				UpdateUI("Lizard");
+			}
+			if (Actor->ActorHasTag("Snail"))
+			{
+				UpdateUI("Snail");
+			}
+			if (Actor->ActorHasTag("BerryBird"))
+			{
+				UpdateUI("BerryBird");
+			}
+			if (Actor->ActorHasTag("GroundCreature"))
+			{
+				UpdateUI("GroundCreature");
+			}
+			if (Actor->ActorHasTag("LargeCreature"))
+			{
+				UpdateUI("LargeCreature");
+			}
+			if (Actor->ActorHasTag("RockCreature"))
+			{
+				UpdateUI("RockCreature");
+			}
+			if (Actor->ActorHasTag("Beetle"))
+			{
+				UpdateUI("Beetle");
 			}
 			return true;
 		}
-		
-	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
 	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
 
 	return false;
 }
+
 
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {

@@ -56,8 +56,8 @@ void APlayerCharController::Handle_MatchStarted_Implementation()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
 
 	AActor* tempStart = UGameplayStatics::GetGameMode(world)->FindPlayerStart(this);
-	FVector spawnLocation = FVector::ZeroVector;
-	FRotator spawnRotation = FRotator::ZeroRotator;
+	FVector spawnLocation = _PlayerSpawnLoc;
+	FRotator spawnRotation = FRotator(0.0f, _PlayerSpawnRotY, 0.0f);
 
 	FActorSpawnParameters SpawnParameters;
 	_PlayerPawn = world->SpawnActor<APawn>(_PawnToSpawn, spawnLocation, spawnRotation, SpawnParameters);
@@ -67,6 +67,8 @@ void APlayerCharController::Handle_MatchStarted_Implementation()
 	{
 		//TODO: Bind to any relevant events
 		castedPawn->Init();
+		
+		this->SetViewTarget(castedPawn);
 		//castedPawn->SetActorLocation(FVector(0.0f, 0.0f, 10.0f));
 	}
 	
