@@ -114,13 +114,14 @@ void ACustomGameMode::OnMatchStateSet()
 
 void ACustomGameMode::Handle_GameRuleCompleted(UGameRule* rule)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, FString::Printf(TEXT("Game Completed")));
 	if(!_GameRuleManagers.Find(rule)) { return; }
 
 	_GameRulesLeft--;
 	
 	if(_GameRulesLeft != 0) { return; }
 
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Emerald,
+FString::Printf(TEXT("GAME COMPLETE")));
 	EndMatch();
 }
 
