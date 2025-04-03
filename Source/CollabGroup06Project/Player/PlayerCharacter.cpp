@@ -546,9 +546,15 @@ void APlayerCharacter::GrappleStart()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 }
 
-void APlayerCharacter::GrappleDuring(FVector GrabPoint)
+void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
 {
-	GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * 700);
+	//GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * grabForce);
+	
+	GetCharacterMovement()->AddForce(FVector(
+		(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
+		(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
+		(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
+		));
 }
 
 void APlayerCharacter::GrappleEnd()
