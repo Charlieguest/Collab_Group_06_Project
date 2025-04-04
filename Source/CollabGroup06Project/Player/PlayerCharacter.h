@@ -105,6 +105,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, CallInEditor)
 	void SearchInventory(const FString& requiredItem, bool isInteracting);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void HideHelpPanel();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _RequiredItemFound;
 	

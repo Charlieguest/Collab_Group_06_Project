@@ -150,6 +150,7 @@ void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Inst
 	bIsCameraOpen = !bIsCameraOpen;
 	if (bIsCameraOpen)
 	{
+		HideHelpPanel();
 		if (ScreenshotWidgetInstance)
 		{
 			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
@@ -578,6 +579,10 @@ void APlayerCharacter::InventoryBPAction_Implementation()
 }
 
 void APlayerCharacter::ActivateAnimal_Implementation()
+{
+}
+
+void APlayerCharacter::HideHelpPanel_Implementation()
 {
 }
 
