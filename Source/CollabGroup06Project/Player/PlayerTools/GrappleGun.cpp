@@ -132,7 +132,7 @@ void AGrappleGun::GrapplePlayer()
 	}
 	else
 	{
-		OnGrappleDuring.Broadcast(_ProjectileHitLoc);
+		OnGrappleDuring.Broadcast(_ProjectileHitLoc, _GrappleForce);
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(_ProjectileHitLoc);
 		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::GrapplePlayer, 0.01f, false);
 	}
