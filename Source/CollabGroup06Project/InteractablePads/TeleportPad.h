@@ -22,8 +22,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere, Category="Linked Teleport Pad") ATeleportPad* M_LinkedTeleportPad = nullptr; //the next linked teleport pad
-	UPROPERTY(EditAnywhere, Category="Teleport Delay (ms)") int32 M_TeleportDelay = 100; //delay in place before allowing teleporting from this pad again
+	UPROPERTY(EditAnywhere, Category="Teleport Delay (seconds)") int32 M_TeleportDelay = 100; //delay in place before allowing teleporting from this pad again
 	UPROPERTY(EditAnywhere, Category="Is Active") bool M_IsTeleportActive = true;
 
+	FTimerHandle TeleportTimerHandle; //timer handling
+	
 	ACharacter* M_character = nullptr;
 };
