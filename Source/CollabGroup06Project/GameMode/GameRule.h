@@ -21,5 +21,5 @@ public:
 	void BroadcastGameRuleComplete();
 
 	UFUNCTION()
-	void Init();
+	virtual void Init();
 };
