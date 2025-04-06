@@ -85,7 +85,7 @@ public:
 	UFUNCTION()
 	void GrappleStart();
 	UFUNCTION()
-	void GrappleDuring(FVector grabPoint);
+	void GrappleDuring(FVector grabPoint, float grabForce);
 	UFUNCTION()
 	void GrappleEnd();
 
@@ -105,6 +105,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, CallInEditor)
 	void SearchInventory(const FString& requiredItem, bool isInteracting);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void HideHelpPanel();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _RequiredItemFound;
 	
