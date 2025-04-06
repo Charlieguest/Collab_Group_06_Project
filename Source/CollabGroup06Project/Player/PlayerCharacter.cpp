@@ -375,56 +375,70 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
 bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 {
 	if (!world) return false;
+	FVector Start = GetActorLocation();
+	FVector ForwardVector =GetActorForwardVector();
+	float TraceDistance = 500.0f;
+	FVector End = Start + (ForwardVector * TraceDistance);
+
+	float SphereRadius = 500.0f;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
 	
+	TArray<FHitResult> HitResults;
 
-	for (TActorIterator<AActor> It(world); It; ++It)
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults, Start, End, FQuat::Identity, ECC_Visibility,
+		FCollisionShape::MakeSphere(SphereRadius), TraceParams
+		);
+
+	for (const FHitResult& Hit : HitResults)
 	{
-		AActor* Actor = *It;
-		if (!Actor->WasRecentlyRendered()) continue;
-		if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
-		if (!Actor->ActorHasTag("Scannable")) continue;
-		
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
+		if (Hit.GetActor())
+		{
+			if (!Hit.GetActor()->WasRecentlyRendered()) continue;
+			if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
+			
+			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
 
-			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Actor->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Hit.GetActor()->GetName());
 
 			//Need reference to the animals photograph status
-			ACreature_Base* animal = Cast<ACreature_Base>(Actor);
+			ACreature_Base* animal = Cast<ACreature_Base>(Hit.GetActor());
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
 		
 			CaptureScreenshot();
 
 			FString Tag;
 		
-			if (Actor->ActorHasTag("Deer"))
+			if (Hit.GetActor()->ActorHasTag("Deer"))
 			{
 				Tag = "Deer";
 			}
-			else if (Actor->ActorHasTag("Lizard"))
+			else if (Hit.GetActor()->ActorHasTag("Lizard"))
 			{
 				Tag = "Lizard";
 			}
-			else if (Actor->ActorHasTag("Snail"))
+			else if (Hit.GetActor()->ActorHasTag("Snail"))
 			{
 				Tag = "Snail";
 			}
-			else if (Actor->ActorHasTag("BerryBird"))
+			else if (Hit.GetActor()->ActorHasTag("BerryBird"))
 			{
 				Tag = "BerryBird";
 			}
-			else if (Actor->ActorHasTag("GroundCreature"))
+			else if (Hit.GetActor()->ActorHasTag("GroundCreature"))
 			{
 				Tag = "GroundCreature";
 			}
-			else if (Actor->ActorHasTag("LargeCreature"))
+			else if (Hit.GetActor()->ActorHasTag("LargeCreature"))
 			{
 				Tag = "LargeCreature";
 			}
-			else if (Actor->ActorHasTag("RockCreature"))
+			else if (Hit.GetActor()->ActorHasTag("RockCreature"))
 			{
 				Tag = "RockCreature";
 			}
-			else if (Actor->ActorHasTag("Beetle"))
+			else if (Hit.GetActor()->ActorHasTag("Beetle"))
 			{
 				Tag = "Beetle";
 			}
@@ -439,11 +453,14 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 
 			return true;
 		}
-
+		
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
 	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
 
-	return false;
+	return false;	
+			
 }
 
 
