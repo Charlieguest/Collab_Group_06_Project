@@ -17,12 +17,19 @@ class COLLABGROUP06PROJECT_API UUI_Journal : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* Deer;
+	UPROPERTY(meta = (BindWidget))
 	UImage* LargeCreature;
+	UPROPERTY(meta = (BindWidget))
 	UImage* Snail;
+	UPROPERTY(meta = (BindWidget))
 	UImage* RockCreature;
+	UPROPERTY(meta = (BindWidget))
 	UImage* Beetle;
+	UPROPERTY(meta = (BindWidget))
 	UImage* GroundCreature;
+	UPROPERTY(meta = (BindWidget))
 	UImage* BerryBird;
+	UPROPERTY(meta = (BindWidget))
 	UImage* Lizard;
 
 	UFUNCTION()
