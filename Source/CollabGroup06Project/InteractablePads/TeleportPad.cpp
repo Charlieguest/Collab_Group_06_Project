@@ -1,5 +1,5 @@
 ﻿#include "TeleportPad.h"
-
+#include "TimerManager.h"
 #include "Compression/lz4hc.h"
 
 ATeleportPad::ATeleportPad()
@@ -32,7 +32,7 @@ void ATeleportPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor
 	M_character = Cast<ACharacter>(OtherActor);
 	if (M_character != nullptr)
 	{
-		//is active? if player enters collision due to teleporting to this pad it will ignore them until they enter the pad again
+		//if player enters collision due to teleporting to this pad it will ignore them until they enter the pad again
 		if (!M_IsTeleportActive)
 		{
 			M_IsTeleportActive = true;
@@ -41,13 +41,11 @@ void ATeleportPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor
 		
 		if (M_LinkedTeleportPad != nullptr)
 		{
-			//prevent character movement until teleported / animation is done 
-
 			//call other teleporter to de-activate until re-entered 
 			M_LinkedTeleportPad->ActivateDelay();
 
-			//teleport character to the teleporter pad
-			TeleportPlayer();
+			//teleport character to the teleporter pad with delay
+			GetWorld()->GetTimerManager().SetTimer(TeleportTimerHandle, this, &ATeleportPad::TeleportPlayer, M_TeleportDelay, false);
 		}
 	}
 }
@@ -61,5 +59,6 @@ void ATeleportPad::ActivateDelay()
 
 void ATeleportPad::TeleportPlayer()
 {
+	//teleports the player to the arrow component with its rotation
 	M_character->TeleportTo(M_LinkedTeleportPad->_ArrowComp->GetComponentLocation(), M_LinkedTeleportPad->_ArrowComp->GetComponentRotation());
 }
