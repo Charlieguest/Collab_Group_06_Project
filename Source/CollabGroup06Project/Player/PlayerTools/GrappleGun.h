@@ -11,7 +11,7 @@ class UCableComponent;
 class APlayerBerry;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrappleDuringSignature, FVector, GrapPoint);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
 
 UCLASS()
@@ -109,6 +109,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _HasBerry;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float _GrappleForce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	TSubclassOf<APlayerBerry> _AttachedBerryRef;
