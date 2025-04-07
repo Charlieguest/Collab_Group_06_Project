@@ -33,6 +33,7 @@ void AGaseousPlant::PadActive_Implementation()
 	{
 	case true:
 		isActive = false;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
 		break;
 	case false:
 		isActive = true;
@@ -73,6 +74,7 @@ void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, c
 
 void AGaseousPlant::Timer()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Timer");
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
 }
 
