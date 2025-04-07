@@ -17,7 +17,7 @@ class COLLABGROUP06PROJECT_API AGaseousPlant : public AInteractPad_Base
 public:	
 	// Sets default values for this actor's properties
 	AGaseousPlant();
-	UPROPERTY(EditAnywhere, Category="Timer") float _timer = 5.0f;
+	UPROPERTY(EditAnywhere, Category="Timer") float _timer = 1.0f;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
