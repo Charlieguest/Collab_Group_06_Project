@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "CableComponent.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
@@ -561,22 +562,43 @@ void APlayerCharacter::Pickup_Berry()
 
 void APlayerCharacter::GrappleStart()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
 {
-	//GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * grabForce);
-	
-	GetCharacterMovement()->AddForce(FVector(
-		(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
-		(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
-		(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
-		));
+	FVector distance = GrabPoint - this->GetActorLocation();
+
+	//Limit to how short the cable can get
+	if(abs(distance.Z) > _MinGrappleCableLength)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+		//Cap to velocity so the little guy doesn't ping around like a tennis ball
+		if(abs(GetCharacterMovement()->Velocity.X) < _MaxGrappleVelocity &&
+		   abs(GetCharacterMovement()->Velocity.Y) < 950.f)
+		{
+			GetCharacterMovement()->AddForce(FVector(
+				(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
+				(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
+				(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
+				));
+		}
+	}
+	//If too close to fly trap 
+	else
+	{
+		if (!GetCharacterMovement()->IsFalling())
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		}
+	}
 }
 
 void APlayerCharacter::GrappleEnd()
 {
+	ReleasePlayer();
 	if (!GetCharacterMovement()->IsFalling())
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);

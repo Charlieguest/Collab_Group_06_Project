@@ -129,12 +129,6 @@ public:
 
 	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _WalkSpeed = 2.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _SprintSpeed = 700.0f;
-
 	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
 	/* ------------------------------- */
@@ -191,6 +185,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MinGrappleCableLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MaxGrappleVelocity;
 
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
