@@ -17,6 +17,7 @@ AGaseousPlant::AGaseousPlant()
 void AGaseousPlant::BeginPlay()
 {
 	Super::BeginPlay();
+	isActive = false;
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapBeginBox);
 	_CollisionComp->OnComponentEndOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapEndBox);
@@ -32,6 +33,7 @@ void AGaseousPlant::PadActive_Implementation()
 	{
 	case true:
 		isActive = false;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
 		break;
 	case false:
 		isActive = true;
@@ -50,6 +52,7 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 			OtherCharacter->LaunchCharacter(FVector(0,0,100), XYOverride, ZOverride);
 			OtherCharacter->GetCharacterMovement()->GravityScale = -0.50;
 			OtherCharacter->GetVelocity().Set(0,0,100.0);
+			Timer();
 		}
 		
 	}
@@ -58,13 +61,24 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 
 void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
-	if (OtherCharacter != nullptr)
+	if (isActive)
 	{
-		OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
+		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
+		if (OtherCharacter != nullptr)
+		{
+			OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
+		}
 	}
 	
 }
+
+void AGaseousPlant::Timer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Timer");
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
+}
+
+
 
 
 
