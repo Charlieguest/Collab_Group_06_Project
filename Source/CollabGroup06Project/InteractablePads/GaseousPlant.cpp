@@ -26,9 +26,9 @@ void AGaseousPlant::BeginPlay()
 void AGaseousPlant::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (isActive == true)
+	if (isActive)
 	{
-		if (TimerStarted == false)
+		if (!TimerStarted)
 		{
 			TimerStarted = true;
 			if (GEngine)
@@ -66,16 +66,16 @@ void AGaseousPlant::PadActive_Implementation()
 void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
-	if (OtherCharacter != nullptr)
+	if (isActive)
 	{
-		if (isActive)
+		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
+		if (OtherCharacter != nullptr)
 		{
+
 			OtherCharacter->LaunchCharacter(FVector(0,0,100), XYOverride, ZOverride);
 			OtherCharacter->GetCharacterMovement()->GravityScale = -0.50;
 			OtherCharacter->GetVelocity().Set(0,0,100.0);
 		}
-		
 	}
 }
 
