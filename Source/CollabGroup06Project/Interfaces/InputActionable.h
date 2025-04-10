@@ -43,11 +43,17 @@ public:
 	void Combine(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void PrimaryInteract(const FInputActionValue& Intance);
+	void PrimaryInteract(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CompletedPrimaryInteract(const FInputActionValue& Intance);
+	void CompletedPrimaryInteract(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Interact(const FInputActionValue& Intance);
+	void Interact(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Aim(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AimReleased(const FInputActionValue& Instance);
 };

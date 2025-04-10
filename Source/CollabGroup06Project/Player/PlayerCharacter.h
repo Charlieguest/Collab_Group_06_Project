@@ -36,7 +36,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -73,14 +74,18 @@ public:
 	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
+	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
+	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void ReleaseAim();
+	
 	UFUNCTION()
 	void Pickup_Berry();
 	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;
-
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -200,4 +205,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> _Animal;
+
+	
 };

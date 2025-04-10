@@ -79,6 +79,7 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 }
 
 
@@ -140,10 +141,32 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
+void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
 {
 	//Executing Blueprint Functionality
 	InventoryBPAction();
+}
+
+void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
+{
+	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
+	{
+		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
+		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
+		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	}
+}
+
+void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
+{
+	ReleaseAim();
+}
+
+void APlayerCharacter::ReleaseAim()
+{
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
@@ -564,6 +587,9 @@ void APlayerCharacter::GrappleStart()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
