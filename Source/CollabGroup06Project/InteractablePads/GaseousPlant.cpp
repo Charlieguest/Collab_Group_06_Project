@@ -46,23 +46,6 @@ void AGaseousPlant::Tick(float DeltaTime)
 }
 
 // Called every frame
-
-
-void AGaseousPlant::PadActive_Implementation()
-{
-	Super::PadActive_Implementation();
-	switch (isActive)
-	{
-	case true:
-		isActive = true;
-		break;
-	case false:
-		isActive = false;
-		TimerStarted = false;
-		break;
-	}
-}
-
 void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

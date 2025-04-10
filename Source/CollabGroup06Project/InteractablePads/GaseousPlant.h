@@ -29,9 +29,6 @@ protected:
 	//FTimerManager& _TimerManager = GetWorldTimerManager();
 	FTimerHandle _TimerHandle;
 public:	
-
-	virtual void PadActive_Implementation() override;
-
 	UFUNCTION()
 	virtual void OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	UFUNCTION()
