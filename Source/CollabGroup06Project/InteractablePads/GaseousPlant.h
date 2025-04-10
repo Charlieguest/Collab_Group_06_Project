@@ -18,13 +18,16 @@ public:
 	// Sets default values for this actor's properties
 	AGaseousPlant();
 	UPROPERTY(EditAnywhere, Category="Timer") float _timer = 1.0f;
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere, Category="Position Override") bool XYOverride = true;
 	UPROPERTY(EditAnywhere, Category="Position Override") bool ZOverride = true;
 	
-	FTimerHandle TimerHandle;
+	bool TimerStarted = false;
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	//FTimerManager& _TimerManager = GetWorldTimerManager();
+	FTimerHandle _TimerHandle;
 public:	
 
 	virtual void PadActive_Implementation() override;
@@ -33,7 +36,4 @@ public:
 	virtual void OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	UFUNCTION()
 	virtual void OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
-	UFUNCTION()
-	void Timer();
-
 };
