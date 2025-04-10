@@ -104,6 +104,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 		_IsGrapplingBerry = true;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(OtherActor->GetActorLocation());
 		_Cable->SetVisibility(true);
+		OnGrappleBerry.Broadcast();
 		_BerryGrappleTimerDelegate.BindUFunction(this, FName("GrappleBerry"), BerryPickup);
 		GetWorld()->GetTimerManager().SetTimer(_BerryGrappleTimer, _BerryGrappleTimerDelegate, 0.05f, false);
 	}
