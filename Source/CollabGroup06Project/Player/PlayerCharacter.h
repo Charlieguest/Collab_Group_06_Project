@@ -36,7 +36,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -73,14 +74,18 @@ public:
 	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
+	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
+	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void ReleaseAim();
+	
 	UFUNCTION()
 	void Pickup_Berry();
 	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;
-
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -128,12 +133,6 @@ public:
 	USpringArmComponent* _CameraSpringArmComponent;
 
 	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _WalkSpeed = 2.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _SprintSpeed = 700.0f;
 
 	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
@@ -191,6 +190,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MinGrappleCableLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MaxGrappleVelocity;
 
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
@@ -201,4 +205,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> _Animal;
+
+	
 };
