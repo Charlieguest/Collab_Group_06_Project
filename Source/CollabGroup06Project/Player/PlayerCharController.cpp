@@ -41,7 +41,9 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->Scan.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Scan);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_CompletePrimaryInteract);
-			PEI->BindAction(_InputActions->SecondaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_SecondaryInteract);
+			PEI->BindAction(_InputActions->ItemInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_ItemInteract);
+			PEI->BindAction(_InputActions->Aim.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_Aim);
+			PEI->BindAction(_InputActions->Aim.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_AimFinished);
 		}
 	}
 }
@@ -152,11 +154,27 @@ void APlayerCharController::CAM_CompletePrimaryInteract(const FInputActionValue&
 	}
 }
 
-void APlayerCharController::CAM_SecondaryInteract(const FInputActionValue& Instance)
+void APlayerCharController::CAM_ItemInteract(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
 	{
 		IInputActionable::Execute_Interact(_PlayerPawn, Instance);
+	}
+}
+
+void APlayerCharController::CAM_Aim(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_Aim(_PlayerPawn, Instance);
+	}
+}
+
+void APlayerCharController::CAM_AimFinished(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_AimReleased(_PlayerPawn, Instance);
 	}
 }
 

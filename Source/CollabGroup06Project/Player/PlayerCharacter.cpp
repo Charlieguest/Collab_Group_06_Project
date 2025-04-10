@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "CableComponent.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
@@ -78,6 +79,7 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 }
 
 
@@ -139,10 +141,32 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
+void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
 {
 	//Executing Blueprint Functionality
 	InventoryBPAction();
+}
+
+void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
+{
+	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
+	{
+		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
+		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
+		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	}
+}
+
+void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
+{
+	ReleaseAim();
+}
+
+void APlayerCharacter::ReleaseAim()
+{
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
@@ -561,22 +585,46 @@ void APlayerCharacter::Pickup_Berry()
 
 void APlayerCharacter::GrappleStart()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
 {
-	//GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * grabForce);
-	
-	GetCharacterMovement()->AddForce(FVector(
-		(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
-		(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
-		(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
-		));
+	FVector distance = GrabPoint - this->GetActorLocation();
+
+	//Limit to how short the cable can get
+	if(abs(distance.Z) > _MinGrappleCableLength)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+		//Cap to velocity so the little guy doesn't ping around like a tennis ball
+		if(abs(GetCharacterMovement()->Velocity.X) < _MaxGrappleVelocity &&
+		   abs(GetCharacterMovement()->Velocity.Y) < 950.f)
+		{
+			GetCharacterMovement()->AddForce(FVector(
+				(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
+				(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
+				(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
+				));
+		}
+	}
+	//If too close to fly trap 
+	else
+	{
+		if (!GetCharacterMovement()->IsFalling())
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		}
+	}
 }
 
 void APlayerCharacter::GrappleEnd()
 {
+	ReleasePlayer();
 	if (!GetCharacterMovement()->IsFalling())
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
