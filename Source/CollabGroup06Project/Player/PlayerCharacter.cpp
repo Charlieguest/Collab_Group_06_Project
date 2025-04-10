@@ -40,7 +40,7 @@ APlayerCharacter::APlayerCharacter()
 	_InteractionZoneSphereComponent->InitSphereRadius(110);
 	_InteractionZoneSphereComponent->SetGenerateOverlapEvents(true);
 	_InteractionZoneSphereComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
-
+	_InteractionZoneSphereComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
 	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
 	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
 
@@ -51,7 +51,7 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (ScreenshotClass)
 	{
 		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
