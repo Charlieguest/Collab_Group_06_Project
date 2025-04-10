@@ -36,5 +36,8 @@ public:
 	TSoftObjectPtr<UInputAction> PrimaryInteract;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UInputAction> SecondaryInteract;
+	TSoftObjectPtr<UInputAction> Aim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftObjectPtr<UInputAction> ItemInteract;
 };
