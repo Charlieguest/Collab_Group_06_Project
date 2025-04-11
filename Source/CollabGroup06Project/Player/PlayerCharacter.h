@@ -149,17 +149,25 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	bool bIsCameraOpen = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	bool bToggleInput = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	FVector PreviousLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	FString ScannedAnimal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	float _ScanDistance = 250.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	float _PhotographDistance = 500.0f;
+
+	
 
 	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
