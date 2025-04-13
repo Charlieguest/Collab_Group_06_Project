@@ -36,7 +36,8 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Intance) override;
+	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
+
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -73,14 +74,18 @@ public:
 	virtual void PrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void CompletedPrimaryInteract_Implementation(const FInputActionValue& Instance) override;
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
+	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
+	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
 
+	UFUNCTION()
+	void ReleaseAim();
+	
 	UFUNCTION()
 	void Pickup_Berry();
 	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
 	bool _HasFired;
-
 	
 	UFUNCTION()
 	void GrappleStart();
@@ -129,12 +134,6 @@ public:
 
 	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _WalkSpeed = 2.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
-	float _SprintSpeed = 700.0f;
-
 	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
 	/* ------------------------------- */
@@ -150,17 +149,25 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category=Speeds);
 	bool bIsSprinting = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	bool bIsCameraOpen = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MovementVars)
 	bool bToggleInput = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	FVector PreviousLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CamerSystem)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
 	FString ScannedAnimal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	float _ScanDistance = 250.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	float _PhotographDistance = 500.0f;
+
+	
 
 	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -191,6 +198,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MinGrappleCableLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float _MaxGrappleVelocity;
 
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
@@ -201,4 +213,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> _Animal;
+
+	
 };

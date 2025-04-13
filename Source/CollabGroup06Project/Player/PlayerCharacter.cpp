@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "CableComponent.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
 #include "CollabGroup06Project/Interfaces/Interact.h"
@@ -20,6 +21,7 @@
 #include "CollabGroup06Project/Creatures/Creature_Base.h"
 #include "CollabGroup06Project/UIWidgets/UI_Journal.h"
 #include "CollabGroup06Project/Pickups/InventoryItem.h"
+#include "Kismet/GameplayStatics.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -40,7 +42,7 @@ APlayerCharacter::APlayerCharacter()
 	_InteractionZoneSphereComponent->InitSphereRadius(110);
 	_InteractionZoneSphereComponent->SetGenerateOverlapEvents(true);
 	_InteractionZoneSphereComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
-
+	_InteractionZoneSphereComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
 	_GrappleAttachPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("GrappleAttachPoint"));
 	_GrappleAttachPoint->SetupAttachment(GetRootComponent());
 
@@ -51,7 +53,7 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (ScreenshotClass)
 	{
 		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
@@ -78,6 +80,7 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 }
 
 
@@ -139,10 +142,32 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Intance)
+void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
 {
 	//Executing Blueprint Functionality
 	InventoryBPAction();
+}
+
+void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
+{
+	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
+	{
+		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
+		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
+		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	}
+}
+
+void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
+{
+	ReleaseAim();
+}
+
+void APlayerCharacter::ReleaseAim()
+{
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
@@ -187,12 +212,38 @@ void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instanc
 	}
 	else
 	{
+		HideHelpPanel();
 		if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
 		{
+			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+			if (PC)
+			{
+				PC->bShowMouseCursor = false;
+
+				//set input mode to UI
+				FInputModeGameOnly InputMode;
+				
+
+				PC->SetInputMode(InputMode);
+			}
+			
 			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		else
 		{
+			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+			if (PC)
+			{
+				PC->bShowMouseCursor = true;
+
+				//set input mode to UI
+				FInputModeGameAndUI InputMode;
+				InputMode.SetWidgetToFocus((UIJournalInstance->TakeWidget()));
+				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+				PC->SetInputMode(InputMode);
+			}
+			
 			UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
@@ -216,61 +267,49 @@ void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
 		//TODO: Set Off A Timer To Start Player Movement
 
 		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &APlayerCharacter::ReleasePlayer, 2.0f, false);
-
-		//TODO: Do frustum scan
-
-		//Repeated Code -- once this is complete work out a way call the same function, maybe with the boundaries passed as params
 		
-		FVector ViewLocation = _ThirdPersonCameraComponent->GetRelativeLocation();
-		FRotator ViewRotation = _ThirdPersonCameraComponent->GetRelativeRotation();
+		FVector Start = GetActorLocation();
+		FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
+		float TraceDistance = _ScanDistance;
+		FVector End = Start + (ForwardVector * TraceDistance);
 
-		FMatrix ViewMatrix = FInverseRotationMatrix(ViewRotation) *FTranslationMatrix(-ViewLocation);
-		float FOV = _ThirdPersonCameraComponent->FieldOfView;
+		float SphereRadius = _ScanDistance;
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+	
+		TArray<FHitResult> HitResults;
 
-		//Create projection matrix
-		const float AspectRatio = 16.0f / 9.0f;
-		const float NearPlane = GNearClippingPlane;
-		const float FarPlane = 10000.f;
+		bool bHit = GetWorld()->SweepMultiByChannel(
+			HitResults, Start, End, FQuat::Identity, ECC_Visibility,
+			FCollisionShape::MakeSphere(SphereRadius), TraceParams
+			);
 
-		FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix
-			(FOV * (float)PI / 360.0f, //degrees to radians
-			AspectRatio,
-			NearPlane,
-			FarPlane);
-
-		FConvexVolume Frustrum;
-		GetViewFrustumBounds(Frustrum, ViewMatrix * ProjectionMatrix, false);
-
-		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+		for (const FHitResult& Hit : HitResults)
 		{
-			AActor* Actor = *It;
-			if (!Actor->WasRecentlyRendered()) continue;
-			if (!Actor || Actor == _ThirdPersonCameraComponent->GetOwner()) continue;
-			if (!Actor->ActorHasTag("Scannable")) continue;
-			
-
-			FVector Origin;
-			FVector Extent;
-			Actor->GetActorBounds(true, Origin, Extent);
-			//DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
-
-			// Firing Interface in blueprint
-			_Animal = Actor;
-			// Execute interface on each rendered actor
-			ActivateAnimal();
-			
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
-			
-			if (Frustrum.IntersectBox(Origin, Extent))
+			if (Hit.GetActor())
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
-				
+				if (!Hit.GetActor()->WasRecentlyRendered()) continue;
+				if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
+
+				AActor* Actor = Hit.GetActor();
+
+				FVector Origin;
+				FVector Extent;
+				Actor->GetActorBounds(true, Origin, Extent);
+				//DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
+
+				// Firing Interface in blueprint
+				_Animal = Actor;
+				// Execute interface on each rendered actor
+				ActivateAnimal();
+			
+				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
 			}
 		}
 
 		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in the view innit")));
 
-		//TODO: Execute Interface on the animal if frustrum finds it
+		//TODO: Execute Interface on the animal if sphere finds it
 	}
 }
 
@@ -376,11 +415,11 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 {
 	if (!world) return false;
 	FVector Start = GetActorLocation();
-	FVector ForwardVector =GetActorForwardVector();
-	float TraceDistance = 500.0f;
+	FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
+	float TraceDistance = _PhotographDistance;
 	FVector End = Start + (ForwardVector * TraceDistance);
 
-	float SphereRadius = 500.0f;
+	float SphereRadius = _PhotographDistance;
 	FCollisionQueryParams TraceParams;
 	TraceParams.AddIgnoredActor(this);
 	
@@ -390,7 +429,9 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 		HitResults, Start, End, FQuat::Identity, ECC_Visibility,
 		FCollisionShape::MakeSphere(SphereRadius), TraceParams
 		);
-
+	
+	CaptureScreenshot();
+	
 	for (const FHitResult& Hit : HitResults)
 	{
 		if (Hit.GetActor())
@@ -405,8 +446,6 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 			//Need reference to the animals photograph status
 			ACreature_Base* animal = Cast<ACreature_Base>(Hit.GetActor());
 			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
-		
-			CaptureScreenshot();
 
 			FString Tag;
 		
@@ -561,22 +600,46 @@ void APlayerCharacter::Pickup_Berry()
 
 void APlayerCharacter::GrappleStart()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
+	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
 {
-	//GetCharacterMovement()->AddForce((GrabPoint - GetActorLocation()) * grabForce);
-	
-	GetCharacterMovement()->AddForce(FVector(
-		(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
-		(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
-		(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
-		));
+	FVector distance = GrabPoint - this->GetActorLocation();
+
+	//Limit to how short the cable can get
+	if(abs(distance.Z) > _MinGrappleCableLength)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+		//Cap to velocity so the little guy doesn't ping around like a tennis ball
+		if(abs(GetCharacterMovement()->Velocity.X) < _MaxGrappleVelocity &&
+		   abs(GetCharacterMovement()->Velocity.Y) < 950.f)
+		{
+			GetCharacterMovement()->AddForce(FVector(
+				(GrabPoint.X - GetActorLocation().X) * (grabForce * 1.5f),
+				(GrabPoint.Y - GetActorLocation().Y) * (grabForce * 1.5f),
+				(GrabPoint.Z - GetActorLocation().Z) * (grabForce / 2.5f)
+				));
+		}
+	}
+	//If too close to fly trap 
+	else
+	{
+		if (!GetCharacterMovement()->IsFalling())
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		}
+	}
 }
 
 void APlayerCharacter::GrappleEnd()
 {
+	ReleasePlayer();
 	if (!GetCharacterMovement()->IsFalling())
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);

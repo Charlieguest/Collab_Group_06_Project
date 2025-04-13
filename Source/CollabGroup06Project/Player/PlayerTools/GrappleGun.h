@@ -13,6 +13,7 @@ class APlayerBerry;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
 
 UCLASS()
 class COLLABGROUP06PROJECT_API AGrappleGun : public AActor, public IFireable
@@ -93,6 +94,7 @@ public:
 	FGrappleStartSignature OnGrappleStart;
 	FGrappleDuringSignature OnGrappleDuring;
 	FGrappleEndSignature OnGrappleEnd;
+	FGrappleBerrySignature OnGrappleBerry;
 
 	FTimerHandle _PlayerGrappleTimer;
 	FTimerDelegate _BerryGrappleTimerDelegate;
