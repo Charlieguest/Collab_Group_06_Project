@@ -19,6 +19,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* Screenshot;
 
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ShutterAnim;
+	
 	UFUNCTION()
 	void SetImage(UTexture2D* NewTexture);
 
