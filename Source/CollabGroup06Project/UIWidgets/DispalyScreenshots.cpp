@@ -11,6 +11,7 @@ void UDispalyScreenshots::SetImage(UTexture2D* NewTexture)
 	if (Screenshot && NewTexture)
 	{
 		Screenshot->SetBrushFromTexture(NewTexture);
+		PlayAnimation(ShutterAnim, 0.0f, 1);
 	}
 }
 
