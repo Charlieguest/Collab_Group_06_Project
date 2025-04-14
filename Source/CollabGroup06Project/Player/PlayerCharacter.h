@@ -38,7 +38,6 @@ public:
 
 	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
 
-
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -62,8 +61,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
-	
-
 
 	/* ------------------------------- */
 	/* ------------------------------- */
