@@ -1,4 +1,4 @@
-﻿#include "CharacterCamera.h"
+﻿#include "ACharacterTool_Camera.h"
 
 #include "CollabGroup06Project/Creatures/Creature_Base.h"
 #include "CollabGroup06Project/Player/PlayerCharacter.h"
@@ -8,11 +8,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
 
-ACharacterCamera::ACharacterCamera()
+ACharacterTool_Camera::ACharacterTool_Camera()
 {
 }
 
-void ACharacterCamera::ToggleCamera_Implementation(APlayerCharacter* player)
+void ACharacterTool_Camera::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ACharacterTool_Camera::ToggleCamera_Implementation(APlayerCharacter* player)
 {
 	
 	_CameraOpen = !_CameraOpen;
@@ -49,7 +54,7 @@ void ACharacterCamera::ToggleCamera_Implementation(APlayerCharacter* player)
 	
 }
 
-void ACharacterCamera::TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal)
+void ACharacterTool_Camera::TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Works")));
 
@@ -96,7 +101,7 @@ void ACharacterCamera::TakePhoto_Implementation(APlayerCharacter* player,  UUser
 	}
 }
 
-bool ACharacterCamera::IsAnythingInCameraView(UWorld* world, APlayerCharacter* player)
+bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharacter* player)
 {
 	if (!world) return false;
 	FVector Start = GetActorLocation();
@@ -183,14 +188,10 @@ bool ACharacterCamera::IsAnythingInCameraView(UWorld* world, APlayerCharacter* p
 	return false;
 }
 
-void ACharacterCamera::CaptureScreenshot()
+void ACharacterTool_Camera::CaptureScreenshot()
 {
 	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
 	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
 	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
 }
 
-void ACharacterCamera::BeginPlay()
-{
-	Super::BeginPlay();
-}

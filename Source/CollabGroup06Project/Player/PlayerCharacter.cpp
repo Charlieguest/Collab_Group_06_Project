@@ -9,6 +9,7 @@
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
 #include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
+#include "PlayerTools\ACharacterTool_Camera.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -73,14 +74,18 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* grappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	AActor* grappleGun = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
+	/*
 	_SpawnedGrappleGun = Cast<AGrappleGun>(grappleGun);
 	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+	*/
+
+	_SpawnedCamera = Cast<ACharacterTool_Base>(grappleGun);
 }
 
 
@@ -150,17 +155,29 @@ void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& I
 
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
+	/*
+	 *
 	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
 	{
 		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
 		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
 		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 	}
+	 *
+	 */
+
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
+	{
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCamera, this);
+	}
 }
 
 void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
 {
-	ReleaseAim();
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
+	{
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCamera, this);
+	}
 }
 
 void APlayerCharacter::ReleaseAim()
@@ -505,15 +522,23 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
-	IInputActionable::PrimaryInteract_Implementation(Instance);
-	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
-	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
-	if(!_HasFired)
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
 	{
-		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
-		_HasFired = true;
+		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCamera, this, UIJournalInstance);
 	}
+
+	/*
+		IInputActionable::PrimaryInteract_Implementation(Instance);
+		MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
+		GetCapsuleComponent()->SetWorldRotation(MovementRotation);
+
+		if(!_HasFired)
+		{
+			GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
+			_HasFired = true;
+		}
+	*/
 }
 
 void APlayerCharacter::GrappleShoot()

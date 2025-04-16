@@ -1,20 +1,19 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "CollabGroup06Project/Interfaces/Fireable.h"
-#include "CollabGroup06Project/Interfaces/PhotoTakeable.h"
+#include "CharacterTool_Base.h"
 #include "GameFramework/Actor.h"
-#include "CharacterCamera.generated.h"
+#include "ACharacterTool_Camera.generated.h"
 
 class ACreature_Base;
 
 UCLASS()
-class COLLABGROUP06PROJECT_API ACharacterCamera : public AActor, public IPhotoTakeable
+class COLLABGROUP06PROJECT_API ACharacterTool_Camera : public ACharacterTool_Base
 {
 	GENERATED_BODY()
 
 public:
-	ACharacterCamera();
+	ACharacterTool_Camera();
 
 	virtual void TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal) override;
 

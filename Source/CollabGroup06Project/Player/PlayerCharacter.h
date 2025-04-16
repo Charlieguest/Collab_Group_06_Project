@@ -8,7 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 
-class ACharacterCamera;
+class ACharacterTool_Base;
 class ACreature_Base;
 class APlayerBerry;
 class USphereComponent;
@@ -166,10 +166,10 @@ public:
 	float _PhotographDistance = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACharacterCamera> _Camera;
+	TSubclassOf<ACharacterTool_Base> _Camera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<ACharacterCamera> _SpawnedCamera;
+	TObjectPtr<ACharacterTool_Base> _SpawnedCamera;
 
 	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
