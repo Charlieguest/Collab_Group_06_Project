@@ -49,8 +49,10 @@ void ACharacterCamera::ToggleCamera_Implementation(APlayerCharacter* player)
 	
 }
 
-void ACharacterCamera::TakePhoto_Implementation(bool isCameraOpen, APlayerCharacter* player,  UUserWidget* journal)
+void ACharacterCamera::TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Works")));
+
 	if(_CameraOpen)
 	{
 		IsAnythingInCameraView(GetWorld(), player);

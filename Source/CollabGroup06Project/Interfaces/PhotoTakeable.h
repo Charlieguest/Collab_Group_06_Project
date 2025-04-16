@@ -18,7 +18,7 @@ class COLLABGROUP06PROJECT_API IPhotoTakeable
 	
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void TakePhoto(bool isCameraOpen, APlayerCharacter* player, UUserWidget* journal);
+	void TakePhoto(APlayerCharacter* player, UUserWidget* journal);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ToggleCamera(APlayerCharacter* player);

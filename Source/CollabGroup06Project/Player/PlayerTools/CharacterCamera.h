@@ -16,7 +16,7 @@ class COLLABGROUP06PROJECT_API ACharacterCamera : public AActor, public IPhotoTa
 public:
 	ACharacterCamera();
 
-	virtual void TakePhoto_Implementation(bool isCameraOpen, APlayerCharacter* player,  UUserWidget* journal) override;
+	virtual void TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal) override;
 
 	virtual void ToggleCamera_Implementation(APlayerCharacter* player) override;
 
