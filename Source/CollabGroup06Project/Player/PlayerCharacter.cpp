@@ -9,7 +9,7 @@
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
 #include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
-#include "PlayerTools\ACharacterTool_Camera.h"
+#include "PlayerTools\CharacterTool_Camera.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -86,6 +86,7 @@ void APlayerCharacter::BeginPlay()
 	*/
 
 	_SpawnedCamera = Cast<ACharacterTool_Base>(grappleGun);
+	_SpawnedCamera->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
 }
 
 
@@ -359,12 +360,12 @@ UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, ScreenshotPath);
 }
 
-void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
+void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUserWidget* screenshotInstance)
 {
 	if (ScreenshotWidgetInstance)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
-		UDispalyScreenshots* TestUI = Cast<UDispalyScreenshots>(ScreenshotWidgetInstance);
+		UDispalyScreenshots* TestUI = Cast<UDispalyScreenshots>(screenshotInstance);
 		if (TestUI)
 		{
 			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
@@ -380,6 +381,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
 
 	if (UIJournalInstance && animal->_IsPhotographable)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
 		UUI_Journal* Journal = Cast<UUI_Journal>(UIJournalInstance);
 		if (Journal)

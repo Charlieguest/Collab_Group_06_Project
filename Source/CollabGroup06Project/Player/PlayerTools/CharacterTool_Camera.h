@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "CharacterTool_Base.h"
 #include "GameFramework/Actor.h"
-#include "ACharacterTool_Camera.generated.h"
+#include "CharacterTool_Camera.generated.h"
 
 class ACreature_Base;
 
@@ -26,13 +26,16 @@ public:
 	bool IsAnythingInCameraView(UWorld* world, APlayerCharacter* player);
 	
 	UUserWidget* ScreenshotWidgetInstance;
+
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void UpdateUIOnPlayer(FString animalType, ACreature_Base* animal);
+	
+	FTimerHandle _UpdateUIDelayTimer;
+	FTimerDelegate _UpdateUIDelayDelegate;
 	
 protected:
 
 	bool _CameraOpen;
-
-	FTimerHandle _UpdateUIDelayTimer;
-	FTimerDelegate _UpdateUIDelayDelegate;
 	
 	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")

@@ -1,4 +1,4 @@
-﻿#include "ACharacterTool_Camera.h"
+﻿#include "CharacterTool_Camera.h"
 
 #include "CollabGroup06Project/Creatures/Creature_Base.h"
 #include "CollabGroup06Project/Player/PlayerCharacter.h"
@@ -15,6 +15,13 @@ ACharacterTool_Camera::ACharacterTool_Camera()
 void ACharacterTool_Camera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (ScreenshotClass)
+	{
+		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
+		ScreenshotWidgetInstance->AddToViewport();
+		ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void ACharacterTool_Camera::ToggleCamera_Implementation(APlayerCharacter* player)
@@ -56,8 +63,6 @@ void ACharacterTool_Camera::ToggleCamera_Implementation(APlayerCharacter* player
 
 void ACharacterTool_Camera::TakePhoto_Implementation(APlayerCharacter* player,  UUserWidget* journal)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Works")));
-
 	if(_CameraOpen)
 	{
 		IsAnythingInCameraView(GetWorld(), player);
@@ -104,14 +109,14 @@ void ACharacterTool_Camera::TakePhoto_Implementation(APlayerCharacter* player,  
 bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharacter* player)
 {
 	if (!world) return false;
-	FVector Start = GetActorLocation();
+	FVector Start = player->GetActorLocation();
 	FVector ForwardVector = player->_ThirdPersonCameraComponent->GetForwardVector();
 	float TraceDistance = player->_PhotographDistance;
 	FVector End = Start + (ForwardVector * TraceDistance);
 
 	float SphereRadius = player->_PhotographDistance;
 	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
+	TraceParams.AddIgnoredActor(player);
 	
 	TArray<FHitResult> HitResults;
 
@@ -124,6 +129,8 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 	
 	for (const FHitResult& Hit : HitResults)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Purple, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
+
 		if (Hit.GetActor())
 		{
 			if (!Hit.GetActor()->WasRecentlyRendered()) continue;
@@ -175,7 +182,7 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
 			}
 
-			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag, animal);
+			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUIOnPlayer"), Tag, animal);
 			GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
 
 			return true;
@@ -186,6 +193,11 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
 
 	return false;
+}
+
+void ACharacterTool_Camera::UpdateUIOnPlayer(FString animalType, ACreature_Base* animal)
+{
+	OnSuccessfulAnimalPhotoTaken.Broadcast(animalType, animal, ScreenshotWidgetInstance);
 }
 
 void ACharacterTool_Camera::CaptureScreenshot()

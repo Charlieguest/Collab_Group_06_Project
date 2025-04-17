@@ -58,7 +58,7 @@ public:
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void UpdateUI(FString animalType, ACreature_Base* creatureBase);
+	void UpdateUI(FString animalType, ACreature_Base* creatureBase, UUserWidget* screenshotInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	bool isAnythingInCameraView(UWorld* world);
