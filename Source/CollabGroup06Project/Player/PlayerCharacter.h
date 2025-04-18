@@ -9,12 +9,12 @@
 
 
 class ACharacterTool_Base;
+class ACharacterTool_GrappleGun;
 class ACreature_Base;
 class APlayerBerry;
 class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
-class AGrappleGun;
 struct FInputActionValue;
 
 UCLASS()
@@ -166,10 +166,10 @@ public:
 	float _PhotographDistance = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACharacterTool_Base> _Camera;
+	TSubclassOf<ACharacterTool_Base> _CharacterTool;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<ACharacterTool_Base> _SpawnedCamera;
+	TObjectPtr<ACharacterTool_Base> _SpawnedCharacterTool;
 
 	//Camera border UI
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -195,10 +195,10 @@ public:
 	TObjectPtr<UArrowComponent> _GrappleAttachPoint;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AGrappleGun> _GrappleGun;
+	TSubclassOf<ACharacterTool_GrappleGun> _GrappleGun;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<AGrappleGun> _SpawnedGrappleGun;
+	TObjectPtr<ACharacterTool_GrappleGun> _SpawnedGrappleGun;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float _MinGrappleCableLength;

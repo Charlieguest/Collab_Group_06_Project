@@ -24,6 +24,16 @@ void ACharacterTool_Base::Fire_Stop_Implementation()
 	IFireable::Fire_Stop_Implementation();
 }
 
+void ACharacterTool_Base::Grapple_Aim_Implementation(APlayerCharacter* player)
+{
+	IFireable::Grapple_Aim_Implementation(player);
+}
+
+void ACharacterTool_Base::Grapple_Aim_Released_Implementation(APlayerCharacter* player)
+{
+	IFireable::Grapple_Aim_Released_Implementation(player);
+}
+
 void ACharacterTool_Base::BeginPlay()
 {
 	Super::BeginPlay();

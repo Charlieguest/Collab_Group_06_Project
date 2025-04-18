@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterTool_Base.h"
 #include "CollabGroup06Project/Interfaces/Fireable.h"
-#include "GrappleGun.generated.h"
+#include "CharacterTool_GrappleGun.generated.h"
 
 class ABerryPickup;
 class AGrappleProjectile;
@@ -10,22 +11,21 @@ class UArrowComponent;
 class UCableComponent;
 class APlayerBerry;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
-
 UCLASS()
-class COLLABGROUP06PROJECT_API AGrappleGun : public AActor, public IFireable
+class COLLABGROUP06PROJECT_API ACharacterTool_GrappleGun : public ACharacterTool_Base
 {
 	GENERATED_BODY()
 
 public:
-	AGrappleGun();
+	ACharacterTool_GrappleGun();
 	
 	virtual bool Fire_Implementation(FVector Forward) override;
 
 	virtual void Fire_Stop_Implementation() override;
+
+	virtual void Grapple_Aim_Implementation(APlayerCharacter* player) override;
+
+	virtual void Grapple_Aim_Released_Implementation(APlayerCharacter* player) override;
 
 	virtual void BeginPlay() override;
 	
@@ -90,12 +90,7 @@ public:
 	bool _IsGrapplingBerry;
 
 	TObjectPtr<AGrappleProjectile> _GrappleProjectile;
-
-	FGrappleStartSignature OnGrappleStart;
-	FGrappleDuringSignature OnGrappleDuring;
-	FGrappleEndSignature OnGrappleEnd;
-	FGrappleBerrySignature OnGrappleBerry;
-
+	
 	FTimerHandle _PlayerGrappleTimer;
 	FTimerDelegate _BerryGrappleTimerDelegate;
 	FTimerHandle _BerryGrappleTimer;

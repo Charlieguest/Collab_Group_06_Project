@@ -11,10 +11,10 @@ class APlayerCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAnimalPhotoTaken, FString, animalType, ACreature_Base*, animal, UUserWidget*, screenshotInstance);
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
 
 
 UCLASS(Abstract)
@@ -32,13 +32,17 @@ public:
 	virtual bool Fire_Implementation(FVector forward) override;
 	
 	virtual void Fire_Stop_Implementation() override;
+
+	virtual void Grapple_Aim_Implementation(APlayerCharacter* player) override;
+
+	virtual void Grapple_Aim_Released_Implementation(APlayerCharacter* player) override;
 	
 	FAnimalPhotoTaken OnSuccessfulAnimalPhotoTaken;
 
-//	FGrappleStartSignature OnGrappleStart;
-//	FGrappleDuringSignature OnGrappleDuring;
-//	FGrappleEndSignature OnGrappleEnd;
-//	FGrappleBerrySignature OnGrappleBerry;
+	FGrappleStartSignature OnGrappleStart;
+	FGrappleDuringSignature OnGrappleDuring;
+	FGrappleEndSignature OnGrappleEnd;
+	FGrappleBerrySignature OnGrappleBerry;
 	
 protected:
 	virtual void BeginPlay() override;

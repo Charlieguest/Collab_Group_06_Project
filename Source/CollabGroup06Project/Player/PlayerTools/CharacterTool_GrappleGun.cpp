@@ -1,15 +1,17 @@
-﻿#include "GrappleGun.h"
+﻿#include "CharacterTool_GrappleGun.h"
 #include "CableComponent.h"
 #include "PlayerBerry.h"
 #include "CollabGroup06Project/InteractablePads/InteractPad_FlyTrap.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
+#include "CollabGroup06Project/Player/PlayerCharacter.h"
 #include "CollabGroup06Project/Projectiles/GrappleProjectile.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponProj, Display, All);
 
-AGrappleGun::AGrappleGun()
+ACharacterTool_GrappleGun::ACharacterTool_GrappleGun()
 {
 	_Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = _Root;
@@ -21,14 +23,14 @@ AGrappleGun::AGrappleGun()
 	_Cable->SetupAttachment(_Root);
 }
 
-void AGrappleGun::BeginPlay()
+void ACharacterTool_GrappleGun::BeginPlay()
 {
 	Super::BeginPlay();
 
 	_Cable->SetVisibility(false);
 }
 
-bool AGrappleGun::Fire_Implementation(FVector Forward)
+bool ACharacterTool_GrappleGun::Fire_Implementation(FVector Forward)
 {
 	UWorld* const world = GetWorld();
 
@@ -49,15 +51,15 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 	_GrappleProjectile = Cast<AGrappleProjectile>(grapple);
 
 	//Listening to hit events
-	_GrappleProjectile->CollisionComp->OnComponentHit.AddDynamic(this, &AGrappleGun::OnProjectileHit);
-	_GrappleProjectile->OnRemoveBerry.AddUniqueDynamic(this, &AGrappleGun::RemoveBerry);
+	_GrappleProjectile->CollisionComp->OnComponentHit.AddDynamic(this, &ACharacterTool_GrappleGun::OnProjectileHit);
+	_GrappleProjectile->OnRemoveBerry.AddUniqueDynamic(this, &ACharacterTool_GrappleGun::RemoveBerry);
 	
 	if(_HasBerry)
 	{
 		_GrappleProjectile->AttachBerryProjectile();
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(_InitialProjectileTimerHandle, this, &AGrappleGun::InitialProjectileTimer, 0.1f, false);
+	GetWorld()->GetTimerManager().SetTimer(_InitialProjectileTimerHandle, this, &ACharacterTool_GrappleGun::InitialProjectileTimer, 0.1f, false);
 	
 	//Applying Force
 	_GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
@@ -66,7 +68,7 @@ bool AGrappleGun::Fire_Implementation(FVector Forward)
 	return true;
 }
 
-void AGrappleGun::Fire_Stop_Implementation()
+void ACharacterTool_GrappleGun::Fire_Stop_Implementation()
 {
 	IFireable::Fire_Stop_Implementation();
 	
@@ -91,8 +93,25 @@ void AGrappleGun::Fire_Stop_Implementation()
 	}
 }
 
-void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse, const FHitResult& Hit)
+void ACharacterTool_GrappleGun::Grapple_Aim_Implementation(APlayerCharacter* player)
+{
+	if(!_IsGrapplingPlayer && !_IsGrapplingBerry)
+	{
+		FVector CurrentLocation = player->_CameraSpringArmComponent->GetRelativeLocation();
+		player->_CameraSpringArmComponent->TargetArmLength = player->_CameraArmLengthCam;
+		player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	}
+}
+
+void ACharacterTool_GrappleGun::Grapple_Aim_Released_Implementation(APlayerCharacter* player)
+{
+	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
+	player->_CameraSpringArmComponent->TargetArmLength = player->_CameraArmLengthDef;
+	player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+}
+
+void ACharacterTool_GrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                                FVector NormalImpulse, const FHitResult& Hit)
 {
 
 	ABerryPickup* BerryPickup = Cast<ABerryPickup>(OtherActor);
@@ -116,7 +135,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 		_ProjectileHitLoc = Hit.ImpactPoint;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(_ProjectileHitLoc);
 		_Cable->SetVisibility(true);
-		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::GrapplePlayer, 0.05f, false);
+		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &ACharacterTool_GrappleGun::GrapplePlayer, 0.05f, false);
 	}
 	else
 	{
@@ -125,7 +144,7 @@ void AGrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 	}
 }
 
-void AGrappleGun::GrapplePlayer()
+void ACharacterTool_GrappleGun::GrapplePlayer()
 {
 	if(!_IsGrapplingPlayer)
 	{
@@ -135,11 +154,11 @@ void AGrappleGun::GrapplePlayer()
 	{
 		OnGrappleDuring.Broadcast(_ProjectileHitLoc, _GrappleForce);
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(_ProjectileHitLoc);
-		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::GrapplePlayer, 0.01f, false);
+		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &ACharacterTool_GrappleGun::GrapplePlayer, 0.01f, false);
 	}
 }
 
-void AGrappleGun::GrappleBerry(ABerryPickup* BerryPickup)
+void ACharacterTool_GrappleGun::GrappleBerry(ABerryPickup* BerryPickup)
 {
 	if(!_IsGrapplingBerry)
 	{
@@ -153,7 +172,7 @@ void AGrappleGun::GrappleBerry(ABerryPickup* BerryPickup)
 	}
 }
 
-void AGrappleGun::AttachBerry()
+void ACharacterTool_GrappleGun::AttachBerry()
 {
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
@@ -166,7 +185,7 @@ void AGrappleGun::AttachBerry()
 	_HasBerry = true;
 }
 
-void AGrappleGun::DestroyGrappleProjectile()
+void ACharacterTool_GrappleGun::DestroyGrappleProjectile()
 {
 	if(_GrappleProjectile != nullptr)
 	{
@@ -188,7 +207,7 @@ void AGrappleGun::DestroyGrappleProjectile()
 	}
 }
 
-void AGrappleGun::RemoveBerry()
+void ACharacterTool_GrappleGun::RemoveBerry()
 {
 	_HasBerry = false;
 	if(_AttachedBerry != nullptr)
@@ -197,7 +216,7 @@ void AGrappleGun::RemoveBerry()
 	}
 }
 
-void AGrappleGun::InitialProjectileTimer()
+void ACharacterTool_GrappleGun::InitialProjectileTimer()
 {
 
 	if(!_HasFired)
@@ -215,6 +234,6 @@ void AGrappleGun::InitialProjectileTimer()
 				DestroyGrappleProjectile();
 		}
 		
-		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &AGrappleGun::InitialProjectileTimer, 0.01f, false);
+		GetWorld()->GetTimerManager().SetTimer(_PlayerGrappleTimer, this, &ACharacterTool_GrappleGun::InitialProjectileTimer, 0.01f, false);
 	}
 }

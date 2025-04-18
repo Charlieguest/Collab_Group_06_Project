@@ -8,7 +8,7 @@
 #include "CollabGroup06Project/Interfaces/Interact.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
-#include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
+#include "PlayerTools\CharacterTool_GrappleGun.h"
 #include "PlayerTools\CharacterTool_Camera.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -60,33 +60,32 @@ void APlayerCharacter::BeginPlay()
 		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
 		ScreenshotWidgetInstance->AddToViewport();
 		ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
-		
 	}
 
 	if (UIJournalClass)
-    	{
-    		UIJournalInstance = CreateWidget<UUserWidget>(GetWorld(), UIJournalClass);
-			UIJournalInstance->AddToViewport();
-			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
-    	}
+	{
+    	UIJournalInstance = CreateWidget<UUserWidget>(GetWorld(), UIJournalClass);
+		UIJournalInstance->AddToViewport();
+		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* grappleGun = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	AActor* grappleGun = GetWorld()->SpawnActor(_CharacterTool, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	/*
-	_SpawnedGrappleGun = Cast<AGrappleGun>(grappleGun);
-	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
-	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
-	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
-	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
-	*/
-
-	_SpawnedCamera = Cast<ACharacterTool_Base>(grappleGun);
-	_SpawnedCamera->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
+	_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+	_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+	 */
+	
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
+	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
 }
 
 
@@ -156,28 +155,19 @@ void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& I
 
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
-	/*
-	 *
-	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
-		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
-		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-	}
-	 *
-	 */
-
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
-	{
-		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCamera, this);
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
+		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
 	}
 }
 
 void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
-		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCamera, this);
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
+		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
 	}
 }
 
@@ -525,29 +515,27 @@ bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
 
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCamera, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
-		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCamera, this, UIJournalInstance);
+		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCharacterTool, this, UIJournalInstance);
 	}
+	
+	IInputActionable::PrimaryInteract_Implementation(Instance);
+	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
+	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
-	/*
-		IInputActionable::PrimaryInteract_Implementation(Instance);
-		MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
-		GetCapsuleComponent()->SetWorldRotation(MovementRotation);
-
-		if(!_HasFired)
-		{
-			GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
-			_HasFired = true;
-		}
-	*/
+	if(!_HasFired)
+	{
+		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
+		_HasFired = true;
+	}
 }
 
 void APlayerCharacter::GrappleShoot()
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UFireable::StaticClass()) )
 	{
-		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
+		bool hasFired = IFireable::Execute_Fire(_SpawnedCharacterTool, _ThirdPersonCameraComponent->GetForwardVector());
 	}
 }
 
@@ -555,10 +543,10 @@ void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActio
 {
 	IInputActionable::CompletedPrimaryInteract_Implementation(Instance);
 	
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UFireable::StaticClass()) )
 	{
 		_HasFired = false;
-		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
+		IFireable::Execute_Fire_Stop(_SpawnedCharacterTool);
 	}
 }
 
@@ -579,12 +567,18 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				}
 
 				// Checking if berry to attach berry to character
-				if(OverlappingActors[i]->ActorHasTag("BerryPickup") && !_SpawnedGrappleGun->_HasBerry)
+				// And we are also holding grapple gun
+				if(OverlappingActors[i]->ActorHasTag("BerryPickup")
+					&& _SpawnedCharacterTool.GetName() == "BP_GrappleGun_C_0")
 				{
+					_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
 					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-					berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
-					IInteract::Execute_interact(OverlappingActors[i]);
-					continue;
+					if(!_SpawnedGrappleGun->_HasBerry)
+					{
+						berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
+						IInteract::Execute_interact(OverlappingActors[i]);
+						continue;
+					}
 				}
 
 				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
@@ -608,7 +602,6 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					continue;
 				}
 				
-
 				//Not berry or inventory item but still interactable?
 				//Execute Interact
 				if(!OverlappingActors[i]->ActorHasTag("BerryPickup"))
@@ -622,7 +615,10 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 void APlayerCharacter::Pickup_Berry()
 {
 	//Spawning Berry on GrappleHook as visual reference
-	_SpawnedGrappleGun->AttachBerry();
+	if(_SpawnedGrappleGun != nullptr)
+	{
+		_SpawnedGrappleGun->AttachBerry();
+	}
 }
 
 void APlayerCharacter::GrappleStart()
