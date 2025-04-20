@@ -39,13 +39,9 @@ public:
 
 	void CAM_Look(const FInputActionValue& Instance);
 	
-	void CAM_CameraToggle(const FInputActionValue& Instance);
-	
 	void CAM_InventoryToggle(const FInputActionValue& Instance);
-
-	void CAM_TakePhoto(const FInputActionValue& Instance);
-
-	void CAM_Scan(const FInputActionValue& Instance);
+	
+	void CAM_JournalToggle(const FInputActionValue& Instance);
 
 	void CAM_PrimaryInteract(const FInputActionValue& Instance);
 

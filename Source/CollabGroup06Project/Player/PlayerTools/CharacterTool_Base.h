@@ -17,7 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRelasePlayerSignature);
 
-UCLASS(Abstract)
+UCLASS()
 class COLLABGROUP06PROJECT_API ACharacterTool_Base : public AActor, public IHeldItemInteractable, public IFireable
 {
 	GENERATED_BODY()

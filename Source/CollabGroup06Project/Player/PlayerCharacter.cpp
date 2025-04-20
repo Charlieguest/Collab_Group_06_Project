@@ -74,7 +74,7 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* currentTool = GetWorld()->SpawnActor(_Scanner, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	AActor* currentTool = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	/*
@@ -84,14 +84,14 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 	 */
+	
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
+	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
 
 	/*
-	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
-	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
-	*/
-
 	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
 	_SpawnedCharacterTool->OnReleasePlayer.AddDynamic(this, &APlayerCharacter::ReleasePlayer);
+	*/
 }
 
 
@@ -159,6 +159,44 @@ void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& I
 	InventoryBPAction();
 }
 
+void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
+{
+	HideHelpPanel();
+	if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
+	{
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		if (PC)
+		{
+			PC->bShowMouseCursor = false;
+
+			//set input mode to UI
+			FInputModeGameOnly InputMode;
+				
+
+			PC->SetInputMode(InputMode);
+		}
+			
+		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		if (PC)
+		{
+			PC->bShowMouseCursor = true;
+
+			//set input mode to UI
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus((UIJournalInstance->TakeWidget()));
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+			PC->SetInputMode(InputMode);
+		}
+			
+		UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
@@ -184,161 +222,10 @@ void APlayerCharacter::ReleaseAim()
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
-void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
-{
-	bIsCameraOpen = !bIsCameraOpen;
-	if (bIsCameraOpen)
-	{
-		HideHelpPanel();
-		if (ScreenshotWidgetInstance)
-		{
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-		}
-		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
-		CurrentLocation.Z =+ 200.0f;
-		
-		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthCam;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-		FVector NewLocation = GetActorLocation();
-		PreviousLocation = GetActorLocation();
-		NewLocation.Z =+ 195.0f;
-		SetActorLocation(NewLocation);
-	}
-	else
-	{
-		FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
-		
-		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-		SetActorLocation(PreviousLocation);
-		if (ScreenshotWidgetInstance)
-		{
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-}
-
-void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instance)
-{
-	if(bIsCameraOpen)
-	{
-	  isAnythingInCameraView(GetWorld());
-	}
-	else
-	{
-		HideHelpPanel();
-		if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = false;
-
-				//set input mode to UI
-				FInputModeGameOnly InputMode;
-				
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = true;
-
-				//set input mode to UI
-				FInputModeGameAndUI InputMode;
-				InputMode.SetWidgetToFocus((UIJournalInstance->TakeWidget()));
-				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
-}
-
-void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
-{
-	IInputActionable::Scan_Implementation(Instance);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("SCANNING")));
-	
-	if(!_IsScanning &&
-		!_HasFired &&
-		!_SpawnedGrappleGun->_IsGrapplingPlayer &&
-		!_SpawnedGrappleGun->_IsGrapplingBerry)
-	{
-		_IsScanning = true;
-
-		//TODO: Stop Player Movement
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-		//TODO: Set Off A Timer To Start Player Movement
-
-		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &APlayerCharacter::ReleasePlayer, 2.0f, false);
-		
-		FVector Start = GetActorLocation();
-		FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
-		float TraceDistance = _ScanDistance;
-		FVector End = Start + (ForwardVector * TraceDistance);
-
-		float SphereRadius = _ScanDistance;
-		FCollisionQueryParams TraceParams;
-		TraceParams.AddIgnoredActor(this);
-	
-		TArray<FHitResult> HitResults;
-
-		bool bHit = GetWorld()->SweepMultiByChannel(
-			HitResults, Start, End, FQuat::Identity, ECC_Visibility,
-			FCollisionShape::MakeSphere(SphereRadius), TraceParams
-			);
-
-		for (const FHitResult& Hit : HitResults)
-		{
-			if (Hit.GetActor())
-			{
-				if (!Hit.GetActor()->WasRecentlyRendered()) continue;
-				if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
-
-				AActor* Actor = Hit.GetActor();
-
-				FVector Origin;
-				FVector Extent;
-				Actor->GetActorBounds(true, Origin, Extent);
-				//DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
-
-				// Firing Interface in blueprint
-				_Animal = Actor;
-				// Execute interface on each rendered actor
-				ActivateAnimal();
-			
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
-			}
-		}
-
-		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in the view innit")));
-
-		//TODO: Execute Interface on the animal if sphere finds it
-	}
-}
-
 void APlayerCharacter::ReleasePlayer()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	_IsScanning = false;
-}
-
-
-void APlayerCharacter::CaptureScreenshot()
-{
-	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
-	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
-	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
 }
 
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
@@ -426,101 +313,8 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 	screenshotNum++;
 }
 
-bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
-{
-	if (!world) return false;
-	FVector Start = GetActorLocation();
-	FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
-	float TraceDistance = _PhotographDistance;
-	FVector End = Start + (ForwardVector * TraceDistance);
-
-	float SphereRadius = _PhotographDistance;
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
-	
-	TArray<FHitResult> HitResults;
-
-	bool bHit = GetWorld()->SweepMultiByChannel(
-		HitResults, Start, End, FQuat::Identity, ECC_Visibility,
-		FCollisionShape::MakeSphere(SphereRadius), TraceParams
-		);
-	
-	CaptureScreenshot();
-	
-	for (const FHitResult& Hit : HitResults)
-	{
-		if (Hit.GetActor())
-		{
-			if (!Hit.GetActor()->WasRecentlyRendered()) continue;
-			if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
-			
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
-
-			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Hit.GetActor()->GetName());
-
-			//Need reference to the animals photograph status
-			ACreature_Base* animal = Cast<ACreature_Base>(Hit.GetActor());
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
-
-			FString Tag;
-		
-			if (Hit.GetActor()->ActorHasTag("Deer"))
-			{
-				Tag = "Deer";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Lizard"))
-			{
-				Tag = "Lizard";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Snail"))
-			{
-				Tag = "Snail";
-			}
-			else if (Hit.GetActor()->ActorHasTag("BerryBird"))
-			{
-				Tag = "BerryBird";
-			}
-			else if (Hit.GetActor()->ActorHasTag("GroundCreature"))
-			{
-				Tag = "GroundCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("LargeCreature"))
-			{
-				Tag = "LargeCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("RockCreature"))
-			{
-				Tag = "RockCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Beetle"))
-			{
-				Tag = "Beetle";
-			}
-			else
-			{
-				Tag = "Error : Creature Tag not set";
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
-			}
-
-			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag, animal);
-			GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
-
-			return true;
-		}
-		
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
-	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
-
-	return false;	
-			
-}
-
-
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
-
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
 		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCharacterTool, this, UIJournalInstance);

@@ -47,23 +47,13 @@ public:
 	/* ------------------------------- */
 	/* ------------------------------- */
 
-	virtual void ToggleCamera_Implementation(const FInputActionValue& Instance) override;
-	
-	virtual void TakePhoto_Implementation(const FInputActionValue& Instance) override;
-
-	virtual void Scan_Implementation(const FInputActionValue& Instance) override;
-	
-	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void CaptureScreenshot();
+	virtual void ToggleJournal_Implementation(const FInputActionValue& Instance) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	UTexture2D* LoadScreenshotAsTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void UpdateUI(FString animalType, ACreature_Base* creatureBase, UUserWidget* screenshotInstance);
-
-	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	bool isAnythingInCameraView(UWorld* world);
 
 	/* ------------------------------- */
 	/* ------------------------------- */
@@ -170,7 +160,7 @@ public:
 	float _PhotographDistance = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACharacterTool_Camera> _CharacterTool;
+	TSubclassOf<ACharacterTool_Camera> _Camera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<ACharacterTool_Base> _SpawnedCharacterTool;
@@ -203,7 +193,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<ACharacterTool_GrappleGun> _SpawnedGrappleGun;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float _MinGrappleCableLength;
 

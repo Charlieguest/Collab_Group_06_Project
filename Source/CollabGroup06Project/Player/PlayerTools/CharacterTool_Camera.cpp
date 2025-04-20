@@ -67,43 +67,6 @@ void ACharacterTool_Camera::TakePhoto_Implementation(APlayerCharacter* player,  
 	{
 		IsAnythingInCameraView(GetWorld(), player);
 	}
-	else
-	{
-		//HideHelpPanel();
-		if (journal->GetVisibility() == ESlateVisibility::Visible)
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(player, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = false;
-
-				//set input mode to UI
-				FInputModeGameOnly InputMode;
-				
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			journal->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(player, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = true;
-
-				//set input mode to UI
-				FInputModeGameAndUI InputMode;
-				InputMode.SetWidgetToFocus((journal->TakeWidget()));
-				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			journal->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
 }
 
 bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharacter* player)
