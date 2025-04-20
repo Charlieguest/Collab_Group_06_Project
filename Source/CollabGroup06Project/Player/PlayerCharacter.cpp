@@ -23,6 +23,7 @@
 #include "CollabGroup06Project/UIWidgets/UI_Journal.h"
 #include "CollabGroup06Project/Pickups/InventoryItem.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerTools/CharacterTool_Scanner.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -73,8 +74,8 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* grappleGun = GetWorld()->SpawnActor(_CharacterTool, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
-	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	AActor* currentTool = GetWorld()->SpawnActor(_Scanner, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	/*
 	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
@@ -83,9 +84,14 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 	 */
-	
+
+	/*
 	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
 	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+	*/
+
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
+	_SpawnedCharacterTool->OnReleasePlayer.AddDynamic(this, &APlayerCharacter::ReleasePlayer);
 }
 
 
@@ -518,6 +524,7 @@ void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& I
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
 		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCharacterTool, this, UIJournalInstance);
+		IHeldItemInteractable::Execute_Scan(_SpawnedCharacterTool, this);
 	}
 	
 	IInputActionable::PrimaryInteract_Implementation(Instance);

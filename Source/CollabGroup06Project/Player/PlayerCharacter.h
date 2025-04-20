@@ -8,8 +8,10 @@
 #include "PlayerCharacter.generated.h"
 
 
+class ACharacterTool_Camera;
 class ACharacterTool_Base;
 class ACharacterTool_GrappleGun;
+class ACharacterTool_Scanner;
 class ACreature_Base;
 class APlayerBerry;
 class USphereComponent;
@@ -95,6 +97,20 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ActivateAnimal();
 
+	//Components
+
+	FRotator MovementRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
+	UCameraComponent* _ThirdPersonCameraComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
+	USpringArmComponent* _CameraSpringArmComponent;
+
+	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
+
+	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
+
 	/* --------------------------------------- */
 	/* ---- Inventory Blueprint Functions ---- */
 	/* --------------------------------------- */
@@ -118,21 +134,9 @@ public:
 	/* ------ Scan Functions --------- */
 	/* ------------------------------- */
 
+	UFUNCTION()
 	void ReleasePlayer();
 	
-	//Components
-
-	FRotator MovementRotation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
-	UCameraComponent* _ThirdPersonCameraComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
-	USpringArmComponent* _CameraSpringArmComponent;
-
-	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
-
-	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
 
 	/* ------------------------------- */
 	/* ----- Camera Components ------- */
@@ -166,7 +170,7 @@ public:
 	float _PhotographDistance = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACharacterTool_Base> _CharacterTool;
+	TSubclassOf<ACharacterTool_Camera> _CharacterTool;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<ACharacterTool_Base> _SpawnedCharacterTool;
@@ -212,9 +216,11 @@ public:
 
 	FTimerHandle _PerformScanTimerHandle;
 	bool _IsScanning;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ACharacterTool_Scanner> _Scanner;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> _Animal;
-
 	
 };

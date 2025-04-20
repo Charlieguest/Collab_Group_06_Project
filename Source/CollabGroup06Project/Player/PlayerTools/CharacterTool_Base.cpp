@@ -34,6 +34,11 @@ void ACharacterTool_Base::Grapple_Aim_Released_Implementation(APlayerCharacter* 
 	IFireable::Grapple_Aim_Released_Implementation(player);
 }
 
+void ACharacterTool_Base::Scan_Implementation(APlayerCharacter* player)
+{
+	IHeldItemInteractable::Scan_Implementation(player);
+}
+
 void ACharacterTool_Base::BeginPlay()
 {
 	Super::BeginPlay();

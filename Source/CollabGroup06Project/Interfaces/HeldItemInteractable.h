@@ -21,4 +21,7 @@ class COLLABGROUP06PROJECT_API IHeldItemInteractable
 
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void ToggleCamera(APlayerCharacter* player);
+
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+		void Scan(APlayerCharacter* player);
 };

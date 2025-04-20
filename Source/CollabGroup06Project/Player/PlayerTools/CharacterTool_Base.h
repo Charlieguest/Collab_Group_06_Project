@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleStartSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrappleDuringSignature, FVector, GrabPoint,  float, GrabForce);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleEndSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRelasePlayerSignature);
 
 UCLASS(Abstract)
 class COLLABGROUP06PROJECT_API ACharacterTool_Base : public AActor, public IHeldItemInteractable, public IFireable
@@ -36,6 +36,8 @@ public:
 	virtual void Grapple_Aim_Implementation(APlayerCharacter* player) override;
 
 	virtual void Grapple_Aim_Released_Implementation(APlayerCharacter* player) override;
+
+	virtual void Scan_Implementation(APlayerCharacter* player) override;
 	
 	FAnimalPhotoTaken OnSuccessfulAnimalPhotoTaken;
 
@@ -43,6 +45,8 @@ public:
 	FGrappleDuringSignature OnGrappleDuring;
 	FGrappleEndSignature OnGrappleEnd;
 	FGrappleBerrySignature OnGrappleBerry;
+
+	FRelasePlayerSignature OnReleasePlayer;
 	
 protected:
 	virtual void BeginPlay() override;
