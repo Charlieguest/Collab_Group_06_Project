@@ -8,7 +8,8 @@
 #include "CollabGroup06Project/Interfaces/Interact.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "Components/CapsuleComponent.h"
-#include "CollabGroup06Project/Player/PlayerTools/GrappleGun.h"
+#include "PlayerTools\CharacterTool_GrappleGun.h"
+#include "PlayerTools\CharacterTool_Camera.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -22,6 +23,7 @@
 #include "CollabGroup06Project/UIWidgets/UI_Journal.h"
 #include "CollabGroup06Project/Pickups/InventoryItem.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerTools/CharacterTool_Scanner.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -59,28 +61,37 @@ void APlayerCharacter::BeginPlay()
 		ScreenshotWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), ScreenshotClass);
 		ScreenshotWidgetInstance->AddToViewport();
 		ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
-		
 	}
 
 	if (UIJournalClass)
-    	{
-    		UIJournalInstance = CreateWidget<UUserWidget>(GetWorld(), UIJournalClass);
-			UIJournalInstance->AddToViewport();
-			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
-    	}
+	{
+    	UIJournalInstance = CreateWidget<UUserWidget>(GetWorld(), UIJournalClass);
+		UIJournalInstance->AddToViewport();
+		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* grappleGun = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
-	grappleGun->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	AActor* currentTool = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
-	_SpawnedGrappleGun = Cast<AGrappleGun>(grappleGun);
-	_SpawnedGrappleGun->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
-	_SpawnedGrappleGun->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
-	_SpawnedGrappleGun->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
-	_SpawnedGrappleGun->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+	/*
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
+	_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+	_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+	 */
+	
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
+	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+
+	/*
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
+	_SpawnedCharacterTool->OnReleasePlayer.AddDynamic(this, &APlayerCharacter::ReleasePlayer);
+	*/
 }
 
 
@@ -148,19 +159,60 @@ void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& I
 	InventoryBPAction();
 }
 
+void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
+{
+	HideHelpPanel();
+	if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
+	{
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		if (PC)
+		{
+			PC->bShowMouseCursor = false;
+
+			//set input mode to UI
+			FInputModeGameOnly InputMode;
+				
+
+			PC->SetInputMode(InputMode);
+		}
+			
+		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		if (PC)
+		{
+			PC->bShowMouseCursor = true;
+
+			//set input mode to UI
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus((UIJournalInstance->TakeWidget()));
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+			PC->SetInputMode(InputMode);
+		}
+			
+		UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
-	if(!_SpawnedGrappleGun->_IsGrapplingPlayer && !_SpawnedGrappleGun->_IsGrapplingBerry)
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
-		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
-		_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthCam;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
+		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
 	}
 }
 
 void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
 {
-	ReleaseAim();
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	{
+		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
+		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
+	}
 }
 
 void APlayerCharacter::ReleaseAim()
@@ -170,161 +222,10 @@ void APlayerCharacter::ReleaseAim()
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
-void APlayerCharacter::ToggleCamera_Implementation(const FInputActionValue& Instance)
-{
-	bIsCameraOpen = !bIsCameraOpen;
-	if (bIsCameraOpen)
-	{
-		HideHelpPanel();
-		if (ScreenshotWidgetInstance)
-		{
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-		}
-		FVector CurrentLocation = _CameraSpringArmComponent->GetRelativeLocation();
-		CurrentLocation.Z =+ 200.0f;
-		
-		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthCam;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-		FVector NewLocation = GetActorLocation();
-		PreviousLocation = GetActorLocation();
-		NewLocation.Z =+ 195.0f;
-		SetActorLocation(NewLocation);
-	}
-	else
-	{
-		FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
-		
-		_CameraSpringArmComponent->TargetArmLength = _CameraArmLengthDef;
-		_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
-		SetActorLocation(PreviousLocation);
-		if (ScreenshotWidgetInstance)
-		{
-			ScreenshotWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-}
-
-void APlayerCharacter::TakePhoto_Implementation(const FInputActionValue& Instance)
-{
-	if(bIsCameraOpen)
-	{
-	  isAnythingInCameraView(GetWorld());
-	}
-	else
-	{
-		HideHelpPanel();
-		if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = false;
-
-				//set input mode to UI
-				FInputModeGameOnly InputMode;
-				
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-			if (PC)
-			{
-				PC->bShowMouseCursor = true;
-
-				//set input mode to UI
-				FInputModeGameAndUI InputMode;
-				InputMode.SetWidgetToFocus((UIJournalInstance->TakeWidget()));
-				InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-				PC->SetInputMode(InputMode);
-			}
-			
-			UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
-}
-
-void APlayerCharacter::Scan_Implementation(const FInputActionValue& Instance)
-{
-	IInputActionable::Scan_Implementation(Instance);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("SCANNING")));
-	
-	if(!_IsScanning &&
-		!_HasFired &&
-		!_SpawnedGrappleGun->_IsGrapplingPlayer &&
-		!_SpawnedGrappleGun->_IsGrapplingBerry)
-	{
-		_IsScanning = true;
-
-		//TODO: Stop Player Movement
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-		//TODO: Set Off A Timer To Start Player Movement
-
-		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &APlayerCharacter::ReleasePlayer, 2.0f, false);
-		
-		FVector Start = GetActorLocation();
-		FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
-		float TraceDistance = _ScanDistance;
-		FVector End = Start + (ForwardVector * TraceDistance);
-
-		float SphereRadius = _ScanDistance;
-		FCollisionQueryParams TraceParams;
-		TraceParams.AddIgnoredActor(this);
-	
-		TArray<FHitResult> HitResults;
-
-		bool bHit = GetWorld()->SweepMultiByChannel(
-			HitResults, Start, End, FQuat::Identity, ECC_Visibility,
-			FCollisionShape::MakeSphere(SphereRadius), TraceParams
-			);
-
-		for (const FHitResult& Hit : HitResults)
-		{
-			if (Hit.GetActor())
-			{
-				if (!Hit.GetActor()->WasRecentlyRendered()) continue;
-				if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
-
-				AActor* Actor = Hit.GetActor();
-
-				FVector Origin;
-				FVector Extent;
-				Actor->GetActorBounds(true, Origin, Extent);
-				//DrawDebugLine(GetWorld(), Origin, Extent, FColor::Magenta, false, 5, 0, 5);
-
-				// Firing Interface in blueprint
-				_Animal = Actor;
-				// Execute interface on each rendered actor
-				ActivateAnimal();
-			
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Actor in view: %s"), *Actor->GetName()));
-			}
-		}
-
-		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in the view innit")));
-
-		//TODO: Execute Interface on the animal if sphere finds it
-	}
-}
-
 void APlayerCharacter::ReleasePlayer()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	_IsScanning = false;
-}
-
-
-void APlayerCharacter::CaptureScreenshot()
-{
-	FString ScreenshotName = FPaths::ProjectSavedDir() + TEXT("Screenshots/Screenshot1.png");
-	FScreenshotRequest::RequestScreenshot(ScreenshotName, false, false);
-	UE_LOG(LogTemp, Warning, TEXT("Screenshot Captured: %s"), *ScreenshotName);
 }
 
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
@@ -342,12 +243,12 @@ UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
 	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, ScreenshotPath);
 }
 
-void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
+void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUserWidget* screenshotInstance)
 {
 	if (ScreenshotWidgetInstance)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
-		UDispalyScreenshots* TestUI = Cast<UDispalyScreenshots>(ScreenshotWidgetInstance);
+		UDispalyScreenshots* TestUI = Cast<UDispalyScreenshots>(screenshotInstance);
 		if (TestUI)
 		{
 			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
@@ -363,6 +264,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
 
 	if (UIJournalInstance && animal->_IsPhotographable)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
 		UUI_Journal* Journal = Cast<UUI_Journal>(UIJournalInstance);
 		if (Journal)
@@ -411,100 +313,14 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal)
 	screenshotNum++;
 }
 
-bool APlayerCharacter::isAnythingInCameraView(UWorld* world)
-{
-	if (!world) return false;
-	FVector Start = GetActorLocation();
-	FVector ForwardVector = _ThirdPersonCameraComponent->GetForwardVector();
-	float TraceDistance = _PhotographDistance;
-	FVector End = Start + (ForwardVector * TraceDistance);
-
-	float SphereRadius = _PhotographDistance;
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
-	
-	TArray<FHitResult> HitResults;
-
-	bool bHit = GetWorld()->SweepMultiByChannel(
-		HitResults, Start, End, FQuat::Identity, ECC_Visibility,
-		FCollisionShape::MakeSphere(SphereRadius), TraceParams
-		);
-	
-	CaptureScreenshot();
-	
-	for (const FHitResult& Hit : HitResults)
-	{
-		if (Hit.GetActor())
-		{
-			if (!Hit.GetActor()->WasRecentlyRendered()) continue;
-			if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
-			
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
-
-			UE_LOG(LogTemp, Warning, TEXT("Actor in view: %s"), *Hit.GetActor()->GetName());
-
-			//Need reference to the animals photograph status
-			ACreature_Base* animal = Cast<ACreature_Base>(Hit.GetActor());
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
-
-			FString Tag;
-		
-			if (Hit.GetActor()->ActorHasTag("Deer"))
-			{
-				Tag = "Deer";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Lizard"))
-			{
-				Tag = "Lizard";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Snail"))
-			{
-				Tag = "Snail";
-			}
-			else if (Hit.GetActor()->ActorHasTag("BerryBird"))
-			{
-				Tag = "BerryBird";
-			}
-			else if (Hit.GetActor()->ActorHasTag("GroundCreature"))
-			{
-				Tag = "GroundCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("LargeCreature"))
-			{
-				Tag = "LargeCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("RockCreature"))
-			{
-				Tag = "RockCreature";
-			}
-			else if (Hit.GetActor()->ActorHasTag("Beetle"))
-			{
-				Tag = "Beetle";
-			}
-			else
-			{
-				Tag = "Error : Creature Tag not set";
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
-			}
-
-			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUI"), Tag, animal);
-			GetWorld()->GetTimerManager().SetTimer(_UpdateUIDelayTimer, _UpdateUIDelayDelegate, 0.1f, false);
-
-			return true;
-		}
-		
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
-	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
-
-	return false;	
-			
-}
-
-
 void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& Instance)
 {
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	{
+		IHeldItemInteractable::Execute_TakePhoto(_SpawnedCharacterTool, this, UIJournalInstance);
+		IHeldItemInteractable::Execute_Scan(_SpawnedCharacterTool, this);
+	}
+	
 	IInputActionable::PrimaryInteract_Implementation(Instance);
 	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
@@ -518,9 +334,9 @@ void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& I
 
 void APlayerCharacter::GrappleShoot()
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UFireable::StaticClass()) )
 	{
-		bool hasFired = IFireable::Execute_Fire(_SpawnedGrappleGun, _ThirdPersonCameraComponent->GetForwardVector());
+		bool hasFired = IFireable::Execute_Fire(_SpawnedCharacterTool, _ThirdPersonCameraComponent->GetForwardVector());
 	}
 }
 
@@ -528,10 +344,10 @@ void APlayerCharacter::CompletedPrimaryInteract_Implementation(const FInputActio
 {
 	IInputActionable::CompletedPrimaryInteract_Implementation(Instance);
 	
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedGrappleGun, UFireable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UFireable::StaticClass()) )
 	{
 		_HasFired = false;
-		IFireable::Execute_Fire_Stop(_SpawnedGrappleGun);
+		IFireable::Execute_Fire_Stop(_SpawnedCharacterTool);
 	}
 }
 
@@ -552,12 +368,18 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				}
 
 				// Checking if berry to attach berry to character
-				if(OverlappingActors[i]->ActorHasTag("BerryPickup") && !_SpawnedGrappleGun->_HasBerry)
+				// And we are also holding grapple gun
+				if(OverlappingActors[i]->ActorHasTag("BerryPickup")
+					&& _SpawnedCharacterTool.GetName() == "BP_GrappleGun_C_0")
 				{
+					_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
 					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-					berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
-					IInteract::Execute_interact(OverlappingActors[i]);
-					continue;
+					if(!_SpawnedGrappleGun->_HasBerry)
+					{
+						berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
+						IInteract::Execute_interact(OverlappingActors[i]);
+						continue;
+					}
 				}
 
 				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
@@ -581,7 +403,6 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					continue;
 				}
 				
-
 				//Not berry or inventory item but still interactable?
 				//Execute Interact
 				if(!OverlappingActors[i]->ActorHasTag("BerryPickup"))
@@ -595,7 +416,10 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 void APlayerCharacter::Pickup_Berry()
 {
 	//Spawning Berry on GrappleHook as visual reference
-	_SpawnedGrappleGun->AttachBerry();
+	if(_SpawnedGrappleGun != nullptr)
+	{
+		_SpawnedGrappleGun->AttachBerry();
+	}
 }
 
 void APlayerCharacter::GrappleStart()
