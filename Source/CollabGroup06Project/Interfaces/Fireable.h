@@ -4,6 +4,8 @@
 #include "UObject/Interface.h"
 #include "Fireable.generated.h"
 
+class APlayerCharacter;
+
 UINTERFACE()
 class UFireable : public UInterface
 {
@@ -18,7 +20,12 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool Fire(FVector forward);
 
-public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Fire_Stop();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Grapple_Aim(APlayerCharacter* player);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Grapple_Aim_Released(APlayerCharacter* player);
 };
