@@ -35,7 +35,7 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Jump);
 			PEI->BindAction(_InputActions->Move.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Move);
 			PEI->BindAction(_InputActions->Look.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Look);
-			PEI->BindAction(_InputActions->ToggleCamera.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_JournalToggle);
+			PEI->BindAction(_InputActions->ToggleJournal.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_JournalToggle);
 			PEI->BindAction(_InputActions->ToggleInventory.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_InventoryToggle);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_CompletePrimaryInteract);
