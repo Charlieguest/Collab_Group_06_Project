@@ -39,20 +39,18 @@ public:
 
 	void CAM_Look(const FInputActionValue& Instance);
 	
-	void CAM_CameraToggle(const FInputActionValue& Instance);
-	
 	void CAM_InventoryToggle(const FInputActionValue& Instance);
-
-	void CAM_TakePhoto(const FInputActionValue& Instance);
-
-	void CAM_Scan(const FInputActionValue& Instance);
+	
+	void CAM_JournalToggle(const FInputActionValue& Instance);
 
 	void CAM_PrimaryInteract(const FInputActionValue& Instance);
 
 	void CAM_CompletePrimaryInteract(const FInputActionValue& Instance);
 
-	void CAM_SecondaryInteract(const FInputActionValue& Instance);
-
+	void CAM_ItemInteract(const FInputActionValue& Instance);
+	
+	void CAM_Aim(const FInputActionValue& Instance);
+	void CAM_AimFinished(const FInputActionValue& Instance);
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;

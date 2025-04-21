@@ -28,26 +28,26 @@ public:
 	void Look(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ToggleCamera(const FInputActionValue& Instance);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ToggleInventory(const FInputActionValue& Intance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void TakePhoto(const FInputActionValue& Instance);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Scan(const FInputActionValue& Instance);
+	void ToggleJournal(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Combine(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void PrimaryInteract(const FInputActionValue& Intance);
+	void PrimaryInteract(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CompletedPrimaryInteract(const FInputActionValue& Intance);
+	void CompletedPrimaryInteract(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Interact(const FInputActionValue& Intance);
+	void Interact(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Aim(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AimReleased(const FInputActionValue& Instance);
 };

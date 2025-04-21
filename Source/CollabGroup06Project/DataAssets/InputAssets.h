@@ -21,13 +21,7 @@ public:
 	TSoftObjectPtr<UInputAction> Look;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UInputAction> ToggleCamera;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSoftObjectPtr<UInputAction> ToggleInventory;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UInputAction> TakePhoto;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSoftObjectPtr<UInputAction> Scan;
@@ -36,5 +30,11 @@ public:
 	TSoftObjectPtr<UInputAction> PrimaryInteract;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UInputAction> SecondaryInteract;
+	TSoftObjectPtr<UInputAction> Aim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftObjectPtr<UInputAction> ItemInteract;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftObjectPtr<UInputAction> ToggleJournal;
 };
