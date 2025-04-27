@@ -5,6 +5,7 @@
 #include "CollabGroup06Project/Interfaces/InputActionable.h"
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
+#include "CollabGroup06Project/Interfaces/BerryAquireable.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -66,7 +67,7 @@ public:
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
 	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
-
+	
 	UFUNCTION()
 	void ReleaseAim();
 	
@@ -126,7 +127,6 @@ public:
 
 	UFUNCTION()
 	void ReleasePlayer();
-	
 
 	/* ------------------------------- */
 	/* ----- Camera Components ------- */
@@ -223,4 +223,8 @@ public:
 	void LoadoutSwitchRight_Implementation(const FInputActionValue& Instance) override;
 
 	void SetCurrentLoadout();
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 };

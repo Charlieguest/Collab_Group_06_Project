@@ -28,9 +28,9 @@
 
 APlayerCharacter::APlayerCharacter()
 {
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
-
+	// Set size for collision capsule
+	
 	_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	_CameraSpringArmComponent->SetupAttachment(RootComponent);
 	_CameraSpringArmComponent->bUsePawnControlRotation = true;
@@ -50,10 +50,12 @@ APlayerCharacter::APlayerCharacter()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
 }
 
 void APlayerCharacter::BeginPlay()
 {
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 	Super::BeginPlay();
 	
 	if (ScreenshotClass)
@@ -85,6 +87,24 @@ void APlayerCharacter::BeginPlay()
 	 
 }
 
+void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UBerryAquireable::StaticClass()))
+	{
+		// Checking if berry to attach berry to character
+		// And we are also holding grapple gun
+		if(_SpawnedCharacterTool->ActorHasTag("GrappleGun"))
+		{
+			_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
+			if(_SpawnedGrappleGun != nullptr && !_SpawnedGrappleGun->_HasBerry)
+			{
+				IBerryAquireable::Execute_PickupBerry(OtherActor);
+				_SpawnedGrappleGun->AttachBerry();
+			}
+		}
+	}
+}
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
@@ -253,6 +273,10 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 
 void APlayerCharacter::SetCurrentLoadout()
 {
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UBerryRemovable::StaticClass()))
+	{
+		IBerryRemovable::Execute_RemoveBerry(_SpawnedCharacterTool);
+	}
 	_SpawnedCharacterTool->Destroy();
 
 	FActorSpawnParameters spawnParams;
@@ -329,6 +353,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 			}
 		}
 	}
+
 
 	if (UIJournalInstance && animal->_IsPhotographable)
 	{
@@ -435,21 +460,6 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					continue;
 				}
 
-				// Checking if berry to attach berry to character
-				// And we are also holding grapple gun
-				if(OverlappingActors[i]->ActorHasTag("BerryPickup") &&
-					_SpawnedCharacterTool->ActorHasTag("GrappleGun"))
-				{
-					_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
-					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);
-					if(!_SpawnedGrappleGun->_HasBerry)
-					{
-						berryPickup->_OnPickedUp.AddUniqueDynamic(this, &APlayerCharacter::Pickup_Berry);
-						IInteract::Execute_interact(OverlappingActors[i]);
-						continue;
-					}
-				}
-
 				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
 				{
 					AInventoryItem* InventoryItem = Cast<AInventoryItem>(OverlappingActors[i]);
@@ -483,11 +493,7 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 void APlayerCharacter::Pickup_Berry()
 {
-	//Spawning Berry on GrappleHook as visual reference
-	if(_SpawnedGrappleGun != nullptr)
-	{
-		_SpawnedGrappleGun->AttachBerry();
-	}
+
 }
 
 void APlayerCharacter::GrappleStart()
