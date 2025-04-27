@@ -74,24 +74,15 @@ void APlayerCharacter::BeginPlay()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
-	AActor* currentTool = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+	AActor* currentTool = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-
-	/*
-	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grappleGun);
+	
+	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
 	_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
-	 */
-	
-	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
-	_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
-
-	/*
-	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
-	_SpawnedCharacterTool->OnReleasePlayer.AddDynamic(this, &APlayerCharacter::ReleasePlayer);
-	*/
+	 
 }
 
 
@@ -226,6 +217,83 @@ void APlayerCharacter::ReleasePlayer()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	_IsScanning = false;
+}
+
+void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance)
+{
+	if(_ActiveLoadoutIndex > 0)
+	{
+		_ActiveLoadoutIndex--;
+	}
+	else
+	{
+		_ActiveLoadoutIndex = 2;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
+
+	SetCurrentLoadout();
+}
+
+void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue& Instance)
+{
+	if(_ActiveLoadoutIndex < 2)
+	{
+		_ActiveLoadoutIndex++;
+	}
+	else
+	{
+		_ActiveLoadoutIndex = 0;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
+
+	SetCurrentLoadout();
+}
+
+void APlayerCharacter::SetCurrentLoadout()
+{
+	_SpawnedCharacterTool->Destroy();
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = this;
+	
+	switch(_ActiveLoadoutIndex)
+	{
+		case 0:
+			{
+				AActor* grapple = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+				grapple->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			
+				_SpawnedCharacterTool = Cast<ACharacterTool_Base>(grapple);
+				_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
+				_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
+				_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
+				_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+			}
+			break;
+		case 1:
+			{
+				AActor* camera = GetWorld()->SpawnActor(_Camera, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+				camera->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+				
+				_SpawnedCharacterTool = Cast<ACharacterTool_Base>(camera);
+				_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+			}
+			break;
+		case 2:
+			{
+				AActor* scanner = GetWorld()->SpawnActor(_Scanner, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
+				scanner->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+					
+				_SpawnedCharacterTool = Cast<ACharacterTool_Base>(scanner);
+				_SpawnedCharacterTool->OnReleasePlayer.AddDynamic(this, &APlayerCharacter::ReleasePlayer);
+			}
+			break;
+		default:
+			break;
+	}
 }
 
 UTexture2D* APlayerCharacter::LoadScreenshotAsTexture()
@@ -369,8 +437,8 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 
 				// Checking if berry to attach berry to character
 				// And we are also holding grapple gun
-				if(OverlappingActors[i]->ActorHasTag("BerryPickup")
-					&& _SpawnedCharacterTool.GetName() == "BP_GrappleGun_C_0")
+				if(OverlappingActors[i]->ActorHasTag("BerryPickup") &&
+					_SpawnedCharacterTool->ActorHasTag("GrappleGun"))
 				{
 					_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
 					ABerryPickup* berryPickup = Cast<ABerryPickup>(OverlappingActors[i]);

@@ -212,5 +212,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> _Animal;
-	
+
+	/* ------------------------------- */
+	/* ------ Loadout Switching ------ */
+	/* ------------------------------- */
+
+	int _ActiveLoadoutIndex = 0;
+
+	void LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance) override;
+	void LoadoutSwitchRight_Implementation(const FInputActionValue& Instance) override;
+
+	void SetCurrentLoadout();
 };
