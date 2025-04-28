@@ -27,6 +27,8 @@ public:
 
 	virtual void Grapple_Aim_Released_Implementation(APlayerCharacter* player) override;
 
+	virtual void RemoveBerry_Implementation() override;
+
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()
