@@ -18,5 +18,8 @@ class COLLABGROUP06PROJECT_API IInteractUI
 	
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Interact();
+	void InteractUI();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void InteractUIOff();
 };
