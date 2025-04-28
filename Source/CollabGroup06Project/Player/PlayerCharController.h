@@ -52,6 +52,9 @@ public:
 	void CAM_Aim(const FInputActionValue& Instance);
 	void CAM_AimFinished(const FInputActionValue& Instance);
 
+	void CAM_LoadoutSwitchLeft(const FInputActionValue& Instance);
+	void CAM_LoadoutSwitchRight(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 
