@@ -110,6 +110,12 @@ void ACharacterTool_GrappleGun::Grapple_Aim_Released_Implementation(APlayerChara
 	player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
+void ACharacterTool_GrappleGun::RemoveBerry_Implementation()
+{
+	// Remove berry on loadout switch
+	RemoveBerry();
+}
+
 void ACharacterTool_GrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                                 FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -117,7 +123,7 @@ void ACharacterTool_GrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AA
 	ABerryPickup* BerryPickup = Cast<ABerryPickup>(OtherActor);
 	AInteractPad_FlyTrap* Flytrap = Cast<AInteractPad_FlyTrap>(OtherActor);
 	
-	if(BerryPickup != nullptr)
+	if(BerryPickup != nullptr && !_HasBerry)
 	{
 		DestroyGrappleProjectile();
 		_IsGrapplingBerry = true;
@@ -183,6 +189,10 @@ void ACharacterTool_GrappleGun::AttachBerry()
 	_AttachedBerry = Cast<APlayerBerry>(playerBerry);
 	
 	_HasBerry = true;
+
+	//Stopping grappling berry now that we have it
+	_IsGrapplingBerry = false;
+	_Cable->SetVisibility(false);
 }
 
 void ACharacterTool_GrappleGun::DestroyGrappleProjectile()
