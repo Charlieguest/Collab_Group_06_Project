@@ -55,7 +55,7 @@ APlayerCharacter::APlayerCharacter()
 
 void APlayerCharacter::BeginPlay()
 {
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 	Super::BeginPlay();
 	
 	if (ScreenshotClass)
@@ -87,24 +87,6 @@ void APlayerCharacter::BeginPlay()
 	 
 }
 
-void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse, const FHitResult& Hit)
-{
-	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UBerryAquireable::StaticClass()))
-	{
-		// Checking if berry to attach berry to character
-		// And we are also holding grapple gun
-		if(_SpawnedCharacterTool->ActorHasTag("GrappleGun"))
-		{
-			_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
-			if(_SpawnedGrappleGun != nullptr && !_SpawnedGrappleGun->_HasBerry)
-			{
-				IBerryAquireable::Execute_PickupBerry(OtherActor);
-				_SpawnedGrappleGun->AttachBerry();
-			}
-		}
-	}
-}
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Instance)
 {
@@ -449,52 +431,71 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 	//check what is inside the interaction zone and if it implements the interface. if it does, call it
 	TArray<AActor*> OverlappingActors;
 	_InteractionZoneSphereComponent->GetOverlappingActors(OverlappingActors);
-	for(int i = 0; i < OverlappingActors.Num(); i++)
+	for (int i = 0; i < OverlappingActors.Num(); i++)
+	{
+		
+		if (UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[i]->GetName());
-			if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UInteract::StaticClass()))
+			//if the interact interface is called on the player it crashes the editor
+			if (OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
 			{
-				//if the interact interface is called on the player it crashes the editor
-				if(OverlappingActors[i]->IsA(APlayerCharacter::StaticClass()))
-				{
-					continue;
-				}
+				continue;
+			}
 
-				if(OverlappingActors[i]->ActorHasTag("InventoryItem"))
+			if (OverlappingActors[i]->ActorHasTag("InventoryItem"))
+			{
+				AInventoryItem* InventoryItem = Cast<AInventoryItem>(OverlappingActors[i]);
+				PickUpInventoryItem(InventoryItem);
+				IInteract::Execute_interact(OverlappingActors[i]);
+				continue;
+			}
+
+			if (OverlappingActors[i]->ActorHasTag("Scannable"))
+			{
+				ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
+				SearchInventory(*Creature->_RequiredItemName, true);
+
+				if (_RequiredItemFound)
 				{
-					AInventoryItem* InventoryItem = Cast<AInventoryItem>(OverlappingActors[i]);
-					PickUpInventoryItem(InventoryItem);
+					// Setting animal as "photographable" 
 					IInteract::Execute_interact(OverlappingActors[i]);
-					continue;
 				}
+				continue;
+			}
 
-				if(OverlappingActors[i]->ActorHasTag("Scannable"))
+			if (OverlappingActors[i]->ActorHasTag("BerryPickup"))
+			{
+				if(UKismetSystemLibrary::DoesImplementInterface(OverlappingActors[i], UBerryAquireable::StaticClass()))
 				{
-					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
-					SearchInventory(*Creature->_RequiredItemName, true);
-
-					if(_RequiredItemFound)
+					// Checking if berry to attach berry to character
+					// And we are also holding grapple gun
+					if (_SpawnedCharacterTool->ActorHasTag("GrappleGun"))
 					{
-						// Setting animal as "photographable" 
-						IInteract::Execute_interact(OverlappingActors[i]);
+						_SpawnedGrappleGun = Cast<ACharacterTool_GrappleGun>(_SpawnedCharacterTool);
+						if (_SpawnedGrappleGun != nullptr && !_SpawnedGrappleGun->_HasBerry)
+						{
+							IBerryAquireable::Execute_PickupBerry(OverlappingActors[i]);
+							_SpawnedGrappleGun->AttachBerry();
+						}
 					}
-					continue;
 				}
-				
-				//Not berry or inventory item but still interactable?
-				//Execute Interact
-				if(!OverlappingActors[i]->ActorHasTag("BerryPickup"))
-				{
-					IInteract::Execute_interact(OverlappingActors[i]);
-				}
+			
+			}
+			//Not berry or inventory item but still interactable?
+			//Execute Interact
+			if (!OverlappingActors[i]->ActorHasTag("BerryPickup"))
+			{
+				IInteract::Execute_interact(OverlappingActors[i]);
 			}
 		}
+
+		
+	}
 }
 
-void APlayerCharacter::Pickup_Berry()
-{
 
-}
+
+
 
 void APlayerCharacter::GrappleStart()
 {

@@ -11,7 +11,7 @@ class USphereComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBerryPickedup);
 
 UCLASS()
-class COLLABGROUP06PROJECT_API ABerryPickup : public AActor, public IBerryAquireable
+class COLLABGROUP06PROJECT_API ABerryPickup : public AActor, public IBerryAquireable, public IInteract
 {
 	GENERATED_BODY()
 

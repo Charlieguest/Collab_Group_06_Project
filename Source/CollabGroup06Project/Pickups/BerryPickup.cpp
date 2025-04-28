@@ -6,6 +6,7 @@
 
 ABerryPickup::ABerryPickup()
 {
+	
 	_CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collision"));
 
 	RootComponent = _CollisionComponent;
@@ -30,3 +31,4 @@ void ABerryPickup::BeginPlay()
 {
 	Super::BeginPlay();
 }
+
