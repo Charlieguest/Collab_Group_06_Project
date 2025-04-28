@@ -67,6 +67,9 @@ public:
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
 	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
+
+	virtual void Sprint_Implementation(const FInputActionValue& Instance) override;
+	virtual void SprintComplete_Implementation(const FInputActionValue& Instance) override;
 	
 	UFUNCTION()
 	void ReleaseAim();

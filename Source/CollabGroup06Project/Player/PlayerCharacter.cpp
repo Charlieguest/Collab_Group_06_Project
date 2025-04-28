@@ -226,6 +226,20 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 	}
 }
 
+void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::Sprint_Implementation(Instance);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Sprint")));
+}
+
+void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
+{
+	IInputActionable::SprintComplete_Implementation(Instance);
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Stopped Sprint")));
+
+}
+
 void APlayerCharacter::ReleaseAim()
 {
 	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
