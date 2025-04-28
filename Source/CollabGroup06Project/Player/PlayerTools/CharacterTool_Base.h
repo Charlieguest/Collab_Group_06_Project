@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "CollabGroup06Project/Interfaces/BerryRemovable.h"
 #include "CollabGroup06Project/Interfaces/Fireable.h"
 #include "CollabGroup06Project/Interfaces/HeldItemInteractable.h"
 #include "GameFramework/Actor.h"
@@ -18,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGrappleBerrySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRelasePlayerSignature);
 
 UCLASS()
-class COLLABGROUP06PROJECT_API ACharacterTool_Base : public AActor, public IHeldItemInteractable, public IFireable
+class COLLABGROUP06PROJECT_API ACharacterTool_Base : public AActor, public IHeldItemInteractable, public IFireable, public IBerryRemovable
 {
 	GENERATED_BODY()
 
@@ -38,6 +39,8 @@ public:
 	virtual void Grapple_Aim_Released_Implementation(APlayerCharacter* player) override;
 
 	virtual void Scan_Implementation(APlayerCharacter* player) override;
+
+	virtual void RemoveBerry_Implementation() override;
 	
 	FAnimalPhotoTaken OnSuccessfulAnimalPhotoTaken;
 

@@ -39,6 +39,11 @@ void ACharacterTool_Base::Scan_Implementation(APlayerCharacter* player)
 	IHeldItemInteractable::Scan_Implementation(player);
 }
 
+void ACharacterTool_Base::RemoveBerry_Implementation()
+{
+	IBerryRemovable::RemoveBerry_Implementation();
+}
+
 void ACharacterTool_Base::BeginPlay()
 {
 	Super::BeginPlay();
