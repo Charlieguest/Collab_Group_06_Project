@@ -35,15 +35,15 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->Jump.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Jump);
 			PEI->BindAction(_InputActions->Move.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Move);
 			PEI->BindAction(_InputActions->Look.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Look);
-			PEI->BindAction(_InputActions->ToggleCamera.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_CameraToggle);
+			PEI->BindAction(_InputActions->ToggleJournal.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_JournalToggle);
 			PEI->BindAction(_InputActions->ToggleInventory.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_InventoryToggle);
-			PEI->BindAction(_InputActions->TakePhoto.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_TakePhoto);
-			PEI->BindAction(_InputActions->Scan.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_Scan);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_PrimaryInteract);
 			PEI->BindAction(_InputActions->PrimaryInteract.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_CompletePrimaryInteract);
 			PEI->BindAction(_InputActions->ItemInteract.LoadSynchronous(), ETriggerEvent::Triggered, this, &APlayerCharController::CAM_ItemInteract);
 			PEI->BindAction(_InputActions->Aim.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_Aim);
 			PEI->BindAction(_InputActions->Aim.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_AimFinished);
+			PEI->BindAction(_InputActions->LoadoutSwitchLeft.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_LoadoutSwitchLeft);
+			PEI->BindAction(_InputActions->LoadoutSwitchRight.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_LoadoutSwitchRight);
 		}
 	}
 }
@@ -106,14 +106,6 @@ void APlayerCharController::CAM_Look(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharController::CAM_CameraToggle(const FInputActionValue& Instance)
-{
-	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
-	{
-		IInputActionable::Execute_ToggleCamera(_PlayerPawn, Instance);
-	}
-}
-
 void APlayerCharController::CAM_InventoryToggle(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
@@ -122,19 +114,11 @@ void APlayerCharController::CAM_InventoryToggle(const FInputActionValue& Instanc
 	}
 }
 
-void APlayerCharController::CAM_TakePhoto(const FInputActionValue& Instance)
+void APlayerCharController::CAM_JournalToggle(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
 	{
-		IInputActionable::Execute_TakePhoto(_PlayerPawn, Instance);
-	}
-}
-
-void APlayerCharController::CAM_Scan(const FInputActionValue& Instance)
-{
-	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
-	{
-		IInputActionable::Execute_Scan(_PlayerPawn, Instance);
+		IInputActionable::Execute_ToggleJournal(_PlayerPawn, Instance);
 	}
 }
 
@@ -178,4 +162,18 @@ void APlayerCharController::CAM_AimFinished(const FInputActionValue& Instance)
 	}
 }
 
+void APlayerCharController::CAM_LoadoutSwitchLeft(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_LoadoutSwitchLeft(_PlayerPawn, Instance);
+	}
+}
 
+void APlayerCharController::CAM_LoadoutSwitchRight(const FInputActionValue& Instance)
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_PlayerPawn, UInputActionable::StaticClass()))
+	{
+		IInputActionable::Execute_LoadoutSwitchRight(_PlayerPawn, Instance);
+	}
+}
