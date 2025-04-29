@@ -45,7 +45,7 @@ void APlayerCharController::SetupInputComponent()
 			PEI->BindAction(_InputActions->LoadoutSwitchLeft.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_LoadoutSwitchLeft);
 			PEI->BindAction(_InputActions->LoadoutSwitchRight.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_LoadoutSwitchRight);
 			PEI->BindAction(_InputActions->Sprint.LoadSynchronous(), ETriggerEvent::Started, this, &APlayerCharController::CAM_Sprint);
-			PEI->BindAction(_InputActions->Sprint.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_Sprint);
+			PEI->BindAction(_InputActions->Sprint.LoadSynchronous(), ETriggerEvent::Completed, this, &APlayerCharController::CAM_SprintComplete);
 		}
 	}
 }

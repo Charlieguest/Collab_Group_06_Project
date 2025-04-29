@@ -70,9 +70,17 @@ public:
 
 	virtual void Sprint_Implementation(const FInputActionValue& Instance) override;
 	virtual void SprintComplete_Implementation(const FInputActionValue& Instance) override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SprintStart();
+	UFUNCTION(BlueprintNativeEvent)
+	void SprintEnd();
 	
 	UFUNCTION()
 	void ReleaseAim();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
+	bool _IsAiming;
 	
 	UFUNCTION()
 	void Pickup_Berry();
@@ -184,8 +192,14 @@ public:
 	FTimerHandle _UpdateUIDelayTimer;
 	FTimerDelegate _UpdateUIDelayDelegate;
 
+	UFUNCTION()
+	void SetHoldingCamera(bool isHoldingCamera);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	bool _IsHoldingCamera;
+
 	/* ------------------------------- */
-	/* ---- Grapple Components ------- */
+	/* ------ Grapple Components ----- */
 	/* ------------------------------- */
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
@@ -203,6 +217,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float _MaxGrappleVelocity;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool _IsGrappling;
+	
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
 	/* ------------------------------- */
