@@ -369,35 +369,35 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 			{
 				if (animalType == TEXT("Deer"))
 				{
-					Journal->SetImage(Journal->Deer, ScreenshotTexture);
+					Journal->SetImage(Journal->Deer, Journal->DeerSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Beetle"))
 				{
-					Journal->SetImage(Journal->Beetle, ScreenshotTexture);
+					Journal->SetImage(Journal->Beetle, Journal->BeetleSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Lizard"))
 				{
-					Journal->SetImage(Journal->Lizard, ScreenshotTexture);
+					Journal->SetImage(Journal->Lizard, Journal->LizardSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Snail"))
 				{
-					Journal->SetImage(Journal->Snail, ScreenshotTexture);
+					Journal->SetImage(Journal->Snail, Journal->SnailSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("BerryBird"))
 				{
-					Journal->SetImage(Journal->BerryBird, ScreenshotTexture);
+					Journal->SetImage(Journal->BerryBird, Journal->BerryBirdSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("GroundCreature"))
 				{
-					Journal->SetImage(Journal->GroundCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->GroundCreature, Journal->GroundCreatureSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("LargeCreature"))
 				{
-					Journal->SetImage(Journal->LargeCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->LargeCreature, Journal->LargeCreatureSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("RockCreature"))
 				{
-					Journal->SetImage(Journal->RockCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->RockCreature, Journal->RockCreatureSticker, ScreenshotTexture);
 				}
 			}
 		}
