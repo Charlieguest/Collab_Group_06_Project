@@ -58,4 +58,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void LoadoutSwitchRight(const FInputActionValue& Instance);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Sprint(const FInputActionValue& Instance);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SprintComplete(const FInputActionValue& Instance);
+
 };

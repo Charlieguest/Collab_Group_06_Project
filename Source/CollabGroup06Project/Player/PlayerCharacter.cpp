@@ -154,11 +154,7 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 {
-	if (bIsCameraOpen)
-	{
-		
-	}
-	else
+	if (!_IsHoldingCamera)
 	{
 		Super::Jump();
 	}
@@ -212,6 +208,7 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
+		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
 	}
@@ -221,9 +218,30 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
+		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
 	}
+}
+
+void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
+{
+	GetCharacterMovement()->MaxWalkSpeed = 850.0f;
+	SprintStart();
+}
+
+void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	SprintEnd();
+}
+
+void APlayerCharacter::SprintStart_Implementation()
+{
+}
+
+void APlayerCharacter::SprintEnd_Implementation()
+{
 }
 
 void APlayerCharacter::ReleaseAim()
@@ -239,36 +257,51 @@ void APlayerCharacter::ReleasePlayer()
 	_IsScanning = false;
 }
 
+void APlayerCharacter::SetHoldingCamera(bool isHoldingCamera)
+{
+	_IsHoldingCamera = isHoldingCamera;
+}
+
 void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance)
 {
-	if(_ActiveLoadoutIndex > 0)
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera)
 	{
-		_ActiveLoadoutIndex--;
-	}
-	else
-	{
-		_ActiveLoadoutIndex = 2;
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
+		if(_ActiveLoadoutIndex > 0)
+		{
+			_ActiveLoadoutIndex--;
+		}
+		else
+		{
+			_ActiveLoadoutIndex = 2;
+		}
+		
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
 
-	SetCurrentLoadout();
+		SetCurrentLoadout();
+	}
 }
 
 void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue& Instance)
 {
-	if(_ActiveLoadoutIndex < 2)
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera)
 	{
-		_ActiveLoadoutIndex++;
-	}
-	else
-	{
-		_ActiveLoadoutIndex = 0;
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
+		if(_ActiveLoadoutIndex < 2)
+		{
+			_ActiveLoadoutIndex++;
+		}
+		else
+		{
+			_ActiveLoadoutIndex = 0;
+		}
+		
+		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
 
-	SetCurrentLoadout();
+		SetCurrentLoadout();
+	}
 }
 
 void APlayerCharacter::SetCurrentLoadout()
@@ -304,6 +337,7 @@ void APlayerCharacter::SetCurrentLoadout()
 				
 				_SpawnedCharacterTool = Cast<ACharacterTool_Base>(camera);
 				_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+				_SpawnedCharacterTool->OnHoldingCamera.AddDynamic(this, &APlayerCharacter::SetHoldingCamera);
 			}
 			break;
 		case 2:
@@ -414,11 +448,10 @@ void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& I
 		IHeldItemInteractable::Execute_Scan(_SpawnedCharacterTool, this);
 	}
 	
-	IInputActionable::PrimaryInteract_Implementation(Instance);
 	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
-	if(!_HasFired)
+	if(!_HasFired && _IsAiming)
 	{
 		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
 		_HasFired = true;
@@ -499,10 +532,13 @@ void APlayerCharacter::Pickup_Berry()
 void APlayerCharacter::GrappleStart()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
 	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
 	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+
+	// For use when checking loadout switch and sprint
+	_IsGrappling = true;
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
@@ -542,6 +578,8 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+
+	_IsGrappling = false;
 }
 
 void APlayerCharacter::SearchInventory_Implementation(const FString& requiredItem, bool isInteracting)
