@@ -28,6 +28,7 @@ void ACharacterTool_Camera::ToggleCamera_Implementation(APlayerCharacter* player
 {
 	
 	_CameraOpen = !_CameraOpen;
+	OnHoldingCamera.Broadcast(_CameraOpen);
 	if (_CameraOpen)
 	{
 		//Event fired to player to resolve
