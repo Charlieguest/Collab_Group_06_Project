@@ -17,7 +17,6 @@ void AInventoryItem::interact_Implementation()
 	this->Destroy();
 }
 
-
 void AInventoryItem::BeginPlay()
 {
 	Super::BeginPlay();

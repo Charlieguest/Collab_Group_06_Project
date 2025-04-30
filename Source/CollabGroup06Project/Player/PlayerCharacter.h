@@ -71,6 +71,8 @@ public:
 	UFUNCTION()
 	void ReleaseAim();
 	
+	UFUNCTION()
+	void Pickup_Berry();
 	
 	void GrappleShoot();
 	FTimerHandle _GrappleShootDelay;
@@ -222,9 +224,7 @@ public:
 
 	void SetCurrentLoadout();
 
-	//UFUNCTION()
-	//void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 };
