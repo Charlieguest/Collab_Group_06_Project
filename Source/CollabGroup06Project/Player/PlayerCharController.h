@@ -55,6 +55,9 @@ public:
 	void CAM_LoadoutSwitchLeft(const FInputActionValue& Instance);
 	void CAM_LoadoutSwitchRight(const FInputActionValue& Instance);
 
+	void CAM_Sprint(const FInputActionValue& Instance);
+	void CAM_SprintComplete(const FInputActionValue& Instance);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APawn> _PawnToSpawn;
 
