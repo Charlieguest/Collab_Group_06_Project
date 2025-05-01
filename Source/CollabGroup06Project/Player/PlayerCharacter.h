@@ -75,6 +75,11 @@ public:
 	void SprintStart();
 	UFUNCTION(BlueprintNativeEvent)
 	void SprintEnd();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerSpeed)
+	float _SprintSpeed = 850.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerSpeed)
+	float _WalkSpeed = 600.0f;
 	
 	UFUNCTION()
 	void ReleaseAim();
