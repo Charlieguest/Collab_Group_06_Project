@@ -226,13 +226,17 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 
 void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
 {
-	GetCharacterMovement()->MaxWalkSpeed = 850.0f;
-	SprintStart();
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
+	{
+		SprintStart();
+	}
 }
 
 void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
 {
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	SprintEnd();
 }
 
@@ -246,6 +250,7 @@ void APlayerCharacter::SprintEnd_Implementation()
 
 void APlayerCharacter::ReleaseAim()
 {
+	_IsAiming = false;
 	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
 	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
@@ -266,7 +271,8 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 {
 	if(!_IsGrappling &&
 		!_IsScanning &&
-		!_IsHoldingCamera)
+		!_IsHoldingCamera &&
+		!_IsAiming)
 	{
 		if(_ActiveLoadoutIndex > 0)
 		{
@@ -287,7 +293,8 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 {
 	if(!_IsGrappling &&
 		!_IsScanning &&
-		!_IsHoldingCamera)
+		!_IsHoldingCamera &&
+		!_IsAiming)
 	{
 		if(_ActiveLoadoutIndex < 2)
 		{
