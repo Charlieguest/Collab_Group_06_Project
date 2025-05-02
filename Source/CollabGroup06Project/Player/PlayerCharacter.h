@@ -240,6 +240,8 @@ public:
 	/* ------ Loadout Switching ------ */
 	/* ------------------------------- */
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int _ActiveLoadoutIndex = 0;
 
 	void LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance) override;

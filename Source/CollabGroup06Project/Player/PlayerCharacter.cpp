@@ -277,6 +277,7 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 		!_IsHoldingCamera &&
 		!_IsAiming)
 	{
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
 		if(_ActiveLoadoutIndex > 0)
 		{
 			_ActiveLoadoutIndex--;
@@ -289,6 +290,7 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
 
 		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
 	}
 }
 
@@ -299,6 +301,7 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 		!_IsHoldingCamera &&
 		!_IsAiming)
 	{
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
 		if(_ActiveLoadoutIndex < 2)
 		{
 			_ActiveLoadoutIndex++;
@@ -311,6 +314,7 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
 
 		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
 	}
 }
 
@@ -543,9 +547,7 @@ void APlayerCharacter::GrappleStart()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
-	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
-	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
-	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	ReleaseAim();
 
 	// For use when checking loadout switch and sprint
 	_IsGrappling = true;
