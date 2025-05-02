@@ -40,8 +40,6 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
-
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -251,5 +249,8 @@ public:
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateLoadout(int previousIndex);
 
 };

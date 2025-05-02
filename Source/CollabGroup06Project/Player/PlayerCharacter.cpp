@@ -34,7 +34,6 @@ APlayerCharacter::APlayerCharacter()
 	_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	_CameraSpringArmComponent->SetupAttachment(RootComponent);
 	_CameraSpringArmComponent->bUsePawnControlRotation = true;
-	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
 
@@ -85,6 +84,10 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 	 
+}
+
+void APlayerCharacter::UpdateLoadout_Implementation(int previousIndex)
+{
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -160,12 +163,6 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
-{
-	//Executing Blueprint Functionality
-	InventoryBPAction();
-}
-
 void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
 {
 	HideHelpPanel();
@@ -237,7 +234,13 @@ void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
 {
-	SprintEnd();
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
+	{
+		SprintEnd();
+	}
 }
 
 void APlayerCharacter::SprintStart_Implementation()
