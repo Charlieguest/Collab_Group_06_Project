@@ -208,6 +208,7 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
+		AimStart();
 	}
 }
 
@@ -218,6 +219,7 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
+		AimStop();
 	}
 }
 
@@ -243,11 +245,19 @@ void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& In
 	}
 }
 
+void APlayerCharacter::AimStart_Implementation()
+{
+}
+
 void APlayerCharacter::SprintStart_Implementation()
 {
 }
 
 void APlayerCharacter::SprintEnd_Implementation()
+{
+}
+
+void APlayerCharacter::AimStop_Implementation()
 {
 }
 
@@ -286,8 +296,6 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 		{
 			_ActiveLoadoutIndex = 2;
 		}
-		
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
 
 		SetCurrentLoadout();
 		UpdateLoadout(prevLoadoutIndex);
@@ -311,8 +319,6 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 			_ActiveLoadoutIndex = 0;
 		}
 		
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
-
 		SetCurrentLoadout();
 		UpdateLoadout(prevLoadoutIndex);
 	}
