@@ -21,9 +21,6 @@ public:
 	TSoftObjectPtr<UInputAction> Look;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UInputAction> ToggleInventory;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSoftObjectPtr<UInputAction> Scan;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
