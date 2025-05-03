@@ -40,8 +40,6 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
-
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -75,6 +73,11 @@ public:
 	void SprintStart();
 	UFUNCTION(BlueprintNativeEvent)
 	void SprintEnd();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void AimStart();
+	UFUNCTION(BlueprintNativeEvent)
+	void AimStop();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerSpeed)
 	float _SprintSpeed = 850.0f;
@@ -242,6 +245,8 @@ public:
 	/* ------ Loadout Switching ------ */
 	/* ------------------------------- */
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int _ActiveLoadoutIndex = 0;
 
 	void LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance) override;
@@ -251,5 +256,8 @@ public:
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateLoadout(int previousIndex);
 
 };
