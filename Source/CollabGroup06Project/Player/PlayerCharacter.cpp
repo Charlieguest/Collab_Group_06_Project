@@ -34,7 +34,6 @@ APlayerCharacter::APlayerCharacter()
 	_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	_CameraSpringArmComponent->SetupAttachment(RootComponent);
 	_CameraSpringArmComponent->bUsePawnControlRotation = true;
-	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
 
@@ -85,6 +84,10 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 	 
+}
+
+void APlayerCharacter::UpdateLoadout_Implementation(int previousIndex)
+{
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -160,12 +163,6 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 	}
 }
 
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
-{
-	//Executing Blueprint Functionality
-	InventoryBPAction();
-}
-
 void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
 {
 	HideHelpPanel();
@@ -211,6 +208,7 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
+		AimStart();
 	}
 }
 
@@ -221,6 +219,7 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
+		AimStop();
 	}
 }
 
@@ -237,7 +236,17 @@ void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
 {
-	SprintEnd();
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
+	{
+		SprintEnd();
+	}
+}
+
+void APlayerCharacter::AimStart_Implementation()
+{
 }
 
 void APlayerCharacter::SprintStart_Implementation()
@@ -245,6 +254,10 @@ void APlayerCharacter::SprintStart_Implementation()
 }
 
 void APlayerCharacter::SprintEnd_Implementation()
+{
+}
+
+void APlayerCharacter::AimStop_Implementation()
 {
 }
 
@@ -274,6 +287,7 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 		!_IsHoldingCamera &&
 		!_IsAiming)
 	{
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
 		if(_ActiveLoadoutIndex > 0)
 		{
 			_ActiveLoadoutIndex--;
@@ -282,10 +296,9 @@ void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue&
 		{
 			_ActiveLoadoutIndex = 2;
 		}
-		
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
 
 		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
 	}
 }
 
@@ -296,6 +309,7 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 		!_IsHoldingCamera &&
 		!_IsAiming)
 	{
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
 		if(_ActiveLoadoutIndex < 2)
 		{
 			_ActiveLoadoutIndex++;
@@ -305,9 +319,8 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 			_ActiveLoadoutIndex = 0;
 		}
 		
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
-
 		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
 	}
 }
 
@@ -540,9 +553,7 @@ void APlayerCharacter::GrappleStart()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
-	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
-	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
-	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	ReleaseAim();
 
 	// For use when checking loadout switch and sprint
 	_IsGrappling = true;
