@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <cvt/wstring>
-
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "InteractUI.generated.h"

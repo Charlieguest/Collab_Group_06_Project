@@ -89,6 +89,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	bool _IsAiming;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Journal)
+	bool _HasJournalOpen;
 	
 	UFUNCTION()
 	void Pickup_Berry();

@@ -165,7 +165,6 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
 {
-	HideHelpPanel();
 	if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
@@ -180,9 +179,11 @@ void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Ins
 			PC->SetInputMode(InputMode);
 		}
 			
+		AimStop();
+		_HasJournalOpen = false;
 		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	else
+	else if(!_IsAiming)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PC)
@@ -196,14 +197,15 @@ void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Ins
 
 			PC->SetInputMode(InputMode);
 		}
-			
+		AimStart();
+		_HasJournalOpen = true;
 		UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) && !_HasJournalOpen)
 	{
 		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
@@ -214,7 +216,7 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()))
 	{
 		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
