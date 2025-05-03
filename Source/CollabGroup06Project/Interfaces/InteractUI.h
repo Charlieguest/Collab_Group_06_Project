@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cvt/wstring>
+
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "InteractUI.generated.h"
@@ -18,7 +20,7 @@ class COLLABGROUP06PROJECT_API IInteractUI
 	
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void InteractUI();
+	void InteractUI(const FString& InteractMessage);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void InteractUIOff();

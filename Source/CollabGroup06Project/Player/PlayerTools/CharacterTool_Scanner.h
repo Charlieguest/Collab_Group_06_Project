@@ -17,8 +17,15 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool _IsScanning;
 
-	virtual void Scan_Implementation(APlayerCharacter* player) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scanner")
+	float _ScanTime = 2.0f;
 
+	virtual void Scan_Implementation(APlayerCharacter* player) override;
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void BeginScan();
+	
+	
 	void ReleasePlayer();
 
 protected:

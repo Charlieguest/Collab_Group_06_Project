@@ -19,12 +19,14 @@ void ACharacterTool_Scanner::Scan_Implementation(APlayerCharacter* player)
 		!player->_SpawnedGrappleGun->_IsGrapplingBerry */)
 	{
 		player->_IsScanning = true;
+		BeginScan();
 
 		//Stopping player movement
 		player->GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
+
 		//Broadcast event to start player movement again
-		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &ACharacterTool_Scanner::ReleasePlayer, 2.0f, false);
+		GetWorld()->GetTimerManager().SetTimer(_PerformScanTimerHandle, this, &ACharacterTool_Scanner::ReleasePlayer, _ScanTime, false);
 		
 		FVector Start = GetActorLocation();
 		FVector ForwardVector = player->_ThirdPersonCameraComponent->GetForwardVector();
@@ -64,6 +66,10 @@ void ACharacterTool_Scanner::Scan_Implementation(APlayerCharacter* player)
 			}
 		}
 	}
+}
+
+void ACharacterTool_Scanner::BeginScan_Implementation()
+{
 }
 
 void ACharacterTool_Scanner::ReleasePlayer()
