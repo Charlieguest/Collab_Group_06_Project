@@ -40,8 +40,6 @@ public:
 
 	virtual void Jump_Implementation(const FInputActionValue& Instance) override;
 
-	virtual void ToggleInventory_Implementation(const FInputActionValue& Instance) override;
-
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Camera mode functions ---- */
@@ -67,9 +65,30 @@ public:
 	virtual void Interact_Implementation(const FInputActionValue& Instance) override;
 	virtual void Aim_Implementation(const FInputActionValue& Instance) override;
 	virtual void AimReleased_Implementation(const FInputActionValue& Instance) override;
+
+	virtual void Sprint_Implementation(const FInputActionValue& Instance) override;
+	virtual void SprintComplete_Implementation(const FInputActionValue& Instance) override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SprintStart();
+	UFUNCTION(BlueprintNativeEvent)
+	void SprintEnd();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void AimStart();
+	UFUNCTION(BlueprintNativeEvent)
+	void AimStop();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerSpeed)
+	float _SprintSpeed = 850.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerSpeed)
+	float _WalkSpeed = 600.0f;
 	
 	UFUNCTION()
 	void ReleaseAim();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
+	bool _IsAiming;
 	
 	UFUNCTION()
 	void Pickup_Berry();
@@ -181,8 +200,14 @@ public:
 	FTimerHandle _UpdateUIDelayTimer;
 	FTimerDelegate _UpdateUIDelayDelegate;
 
+	UFUNCTION()
+	void SetHoldingCamera(bool isHoldingCamera);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraSystem)
+	bool _IsHoldingCamera;
+
 	/* ------------------------------- */
-	/* ---- Grapple Components ------- */
+	/* ------ Grapple Components ----- */
 	/* ------------------------------- */
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "True"))
@@ -200,6 +225,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float _MaxGrappleVelocity;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool _IsGrappling;
+	
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
 	/* ------------------------------- */
@@ -217,6 +245,8 @@ public:
 	/* ------ Loadout Switching ------ */
 	/* ------------------------------- */
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int _ActiveLoadoutIndex = 0;
 
 	void LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance) override;
@@ -226,5 +256,8 @@ public:
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void UpdateLoadout(int previousIndex);
 
 };

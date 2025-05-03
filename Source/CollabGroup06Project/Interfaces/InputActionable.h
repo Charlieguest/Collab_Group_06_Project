@@ -28,10 +28,6 @@ public:
 	void Look(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ToggleInventory(const FInputActionValue& Intance);
-
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Combine(const FInputActionValue& Instance);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -57,5 +53,11 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void LoadoutSwitchRight(const FInputActionValue& Instance);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Sprint(const FInputActionValue& Instance);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SprintComplete(const FInputActionValue& Instance);
 
 };

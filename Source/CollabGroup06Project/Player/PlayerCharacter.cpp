@@ -34,7 +34,6 @@ APlayerCharacter::APlayerCharacter()
 	_CameraSpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	_CameraSpringArmComponent->SetupAttachment(RootComponent);
 	_CameraSpringArmComponent->bUsePawnControlRotation = true;
-	
 	_ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	_ThirdPersonCameraComponent->SetupAttachment(_CameraSpringArmComponent);
 
@@ -85,6 +84,10 @@ void APlayerCharacter::BeginPlay()
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
 	 
+}
+
+void APlayerCharacter::UpdateLoadout_Implementation(int previousIndex)
+{
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -154,20 +157,10 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 {
-	if (bIsCameraOpen)
-	{
-		
-	}
-	else
+	if (!_IsHoldingCamera)
 	{
 		Super::Jump();
 	}
-}
-
-void APlayerCharacter::ToggleInventory_Implementation(const FInputActionValue& Instance)
-{
-	//Executing Blueprint Functionality
-	InventoryBPAction();
 }
 
 void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
@@ -212,8 +205,10 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
+		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim(_SpawnedCharacterTool, this);
+		AimStart();
 	}
 }
 
@@ -221,13 +216,54 @@ void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Insta
 {
 	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
 	{
+		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
 		IFireable::Execute_Grapple_Aim_Released(_SpawnedCharacterTool, this);
+		AimStop();
 	}
+}
+
+void APlayerCharacter::Sprint_Implementation(const FInputActionValue& Instance)
+{
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
+	{
+		SprintStart();
+	}
+}
+
+void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& Instance)
+{
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
+	{
+		SprintEnd();
+	}
+}
+
+void APlayerCharacter::AimStart_Implementation()
+{
+}
+
+void APlayerCharacter::SprintStart_Implementation()
+{
+}
+
+void APlayerCharacter::SprintEnd_Implementation()
+{
+}
+
+void APlayerCharacter::AimStop_Implementation()
+{
 }
 
 void APlayerCharacter::ReleaseAim()
 {
+	_IsAiming = false;
 	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
 	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
@@ -239,36 +275,53 @@ void APlayerCharacter::ReleasePlayer()
 	_IsScanning = false;
 }
 
+void APlayerCharacter::SetHoldingCamera(bool isHoldingCamera)
+{
+	_IsHoldingCamera = isHoldingCamera;
+}
+
 void APlayerCharacter::LoadoutSwitchLeft_Implementation(const FInputActionValue& Instance)
 {
-	if(_ActiveLoadoutIndex > 0)
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
 	{
-		_ActiveLoadoutIndex--;
-	}
-	else
-	{
-		_ActiveLoadoutIndex = 2;
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Left - %d"), _ActiveLoadoutIndex));
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
+		if(_ActiveLoadoutIndex > 0)
+		{
+			_ActiveLoadoutIndex--;
+		}
+		else
+		{
+			_ActiveLoadoutIndex = 2;
+		}
 
-	SetCurrentLoadout();
+		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
+	}
 }
 
 void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue& Instance)
 {
-	if(_ActiveLoadoutIndex < 2)
+	if(!_IsGrappling &&
+		!_IsScanning &&
+		!_IsHoldingCamera &&
+		!_IsAiming)
 	{
-		_ActiveLoadoutIndex++;
+		int prevLoadoutIndex = _ActiveLoadoutIndex;
+		if(_ActiveLoadoutIndex < 2)
+		{
+			_ActiveLoadoutIndex++;
+		}
+		else
+		{
+			_ActiveLoadoutIndex = 0;
+		}
+		
+		SetCurrentLoadout();
+		UpdateLoadout(prevLoadoutIndex);
 	}
-	else
-	{
-		_ActiveLoadoutIndex = 0;
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Right - %d"), _ActiveLoadoutIndex));
-
-	SetCurrentLoadout();
 }
 
 void APlayerCharacter::SetCurrentLoadout()
@@ -304,6 +357,7 @@ void APlayerCharacter::SetCurrentLoadout()
 				
 				_SpawnedCharacterTool = Cast<ACharacterTool_Base>(camera);
 				_SpawnedCharacterTool->OnSuccessfulAnimalPhotoTaken.AddDynamic(this, &APlayerCharacter::UpdateUI);
+				_SpawnedCharacterTool->OnHoldingCamera.AddDynamic(this, &APlayerCharacter::SetHoldingCamera);
 			}
 			break;
 		case 2:
@@ -369,35 +423,35 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 			{
 				if (animalType == TEXT("Deer"))
 				{
-					Journal->SetImage(Journal->Deer, ScreenshotTexture);
+					Journal->SetImage(Journal->Deer, Journal->DeerSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Beetle"))
 				{
-					Journal->SetImage(Journal->Beetle, ScreenshotTexture);
+					Journal->SetImage(Journal->Beetle, Journal->BeetleSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Lizard"))
 				{
-					Journal->SetImage(Journal->Lizard, ScreenshotTexture);
+					Journal->SetImage(Journal->Lizard, Journal->LizardSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("Snail"))
 				{
-					Journal->SetImage(Journal->Snail, ScreenshotTexture);
+					Journal->SetImage(Journal->Snail, Journal->SnailSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("BerryBird"))
 				{
-					Journal->SetImage(Journal->BerryBird, ScreenshotTexture);
+					Journal->SetImage(Journal->BerryBird, Journal->BerryBirdSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("GroundCreature"))
 				{
-					Journal->SetImage(Journal->GroundCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->GroundCreature, Journal->GroundCreatureSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("LargeCreature"))
 				{
-					Journal->SetImage(Journal->LargeCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->LargeCreature, Journal->LargeCreatureSticker, ScreenshotTexture);
 				}
 				if (animalType == TEXT("RockCreature"))
 				{
-					Journal->SetImage(Journal->RockCreature, ScreenshotTexture);
+					Journal->SetImage(Journal->RockCreature, Journal->RockCreatureSticker, ScreenshotTexture);
 				}
 			}
 		}
@@ -414,11 +468,10 @@ void APlayerCharacter::PrimaryInteract_Implementation(const FInputActionValue& I
 		IHeldItemInteractable::Execute_Scan(_SpawnedCharacterTool, this);
 	}
 	
-	IInputActionable::PrimaryInteract_Implementation(Instance);
 	MovementRotation =  FRotator(0, Controller->GetControlRotation().Yaw, 0);
 	GetCapsuleComponent()->SetWorldRotation(MovementRotation);
 
-	if(!_HasFired)
+	if(!_HasFired && _IsAiming)
 	{
 		GetWorld()->GetTimerManager().SetTimer(_GrappleShootDelay, this, &APlayerCharacter::GrappleShoot, 0.01f, false);
 		_HasFired = true;
@@ -499,10 +552,11 @@ void APlayerCharacter::Pickup_Berry()
 void APlayerCharacter::GrappleStart()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
-	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
-	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+
+	ReleaseAim();
+
+	// For use when checking loadout switch and sprint
+	_IsGrappling = true;
 }
 
 void APlayerCharacter::GrappleDuring(FVector GrabPoint,  float grabForce)
@@ -542,6 +596,8 @@ void APlayerCharacter::GrappleEnd()
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	}
+
+	_IsGrappling = false;
 }
 
 void APlayerCharacter::SearchInventory_Implementation(const FString& requiredItem, bool isInteracting)
