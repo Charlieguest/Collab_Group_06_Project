@@ -236,7 +236,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _IsGrappling;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _PlayerHasBerry;
 
 	/* ------------------------------- */
