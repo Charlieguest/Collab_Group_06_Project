@@ -16,4 +16,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void PadActive_Implementation() override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PadActivated();
 };

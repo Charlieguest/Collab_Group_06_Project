@@ -526,14 +526,9 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				if(OverlappingActors[i]->ActorHasTag("Scannable"))
 				{
 					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
-					SearchInventory(*Creature->_RequiredItemName, true);
-
-					if(_RequiredItemFound)
-					{
-						// Setting animal as "photographable" 
-						IInteract::Execute_interact(OverlappingActors[i]);
-					}
-					continue;
+					
+					// Setting animal as "photographable" 
+					IInteract::Execute_interact(OverlappingActors[i]);
 				}
 				
 				//Not berry or inventory item but still interactable?
