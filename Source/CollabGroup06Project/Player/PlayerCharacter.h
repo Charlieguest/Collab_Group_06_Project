@@ -138,6 +138,12 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void HideHelpPanel();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void FeedBerry();
+
+	UFUNCTION(BlueprintCallable, Category = "GrappleGun")
+	void RemoveBerryFromGrapple();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _RequiredItemFound;
@@ -229,7 +235,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _IsGrappling;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool _PlayerHasBerry;
+
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
 	/* ------------------------------- */

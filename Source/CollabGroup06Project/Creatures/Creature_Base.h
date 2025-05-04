@@ -23,6 +23,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool _IsPhotographable;
 
+	bool _BeenPhotographed;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+
 	FAnimalPhotographedSignature OnAnimalPhotographed;
 
 protected:

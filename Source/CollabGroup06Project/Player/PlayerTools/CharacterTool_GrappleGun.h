@@ -40,7 +40,7 @@ public:
 	void GrappleBerry(ABerryPickup* BerryPickup);
 
 	UFUNCTION()
-	void AttachBerry();
+	virtual void AttachBerry() override;
 
 	void DestroyGrappleProjectile();
 
@@ -117,4 +117,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 	TObjectPtr<APlayerBerry> _AttachedBerry;
+
+	TArray<AActor*> _AttachedProjectileActors;
 };

@@ -44,6 +44,8 @@ public:
 	virtual void Scan_Implementation(APlayerCharacter* player) override;
 
 	virtual void RemoveBerry_Implementation() override;
+
+	virtual void AttachBerry();
 	
 	FAnimalPhotoTaken OnSuccessfulAnimalPhotoTaken;
 

@@ -201,13 +201,13 @@ void ACharacterTool_GrappleGun::DestroyGrappleProjectile()
 	{
 		//Destroying Berry on Projectile
 
-		TArray<AActor*> attachedProjectileActors;
+		_AttachedProjectileActors.Empty();
 		
-		_GrappleProjectile->GetAttachedActors(attachedProjectileActors, false, false);
+		_GrappleProjectile->GetAttachedActors(_AttachedProjectileActors, false, false);
 
-		if(attachedProjectileActors.Num() > 0)
+		if(!_AttachedProjectileActors.IsEmpty())
 		{
-			for(AActor* berry : attachedProjectileActors)
+			for(AActor* berry : _AttachedProjectileActors)
 			{
 				berry->Destroy();
 			}

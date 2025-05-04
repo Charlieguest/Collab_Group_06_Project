@@ -104,6 +104,7 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 			{
 				IBerryAquireable::Execute_PickupBerry(OtherActor);
 				_SpawnedGrappleGun->AttachBerry();
+				_PlayerHasBerry = true;
 			}
 		}
 	}
@@ -271,6 +272,19 @@ void APlayerCharacter::ReleaseAim()
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
+void APlayerCharacter::FeedBerry_Implementation()
+{
+}
+
+void APlayerCharacter::RemoveBerryFromGrapple()
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UBerryRemovable::StaticClass()))
+	{
+		IBerryRemovable::Execute_RemoveBerry(_SpawnedCharacterTool);
+	}
+}
+
+
 void APlayerCharacter::ReleasePlayer()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
@@ -328,10 +342,8 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 
 void APlayerCharacter::SetCurrentLoadout()
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UBerryRemovable::StaticClass()))
-	{
-		IBerryRemovable::Execute_RemoveBerry(_SpawnedCharacterTool);
-	}
+	//Removing berry if grapple gun is selected
+	RemoveBerryFromGrapple();
 	_SpawnedCharacterTool->Destroy();
 
 	FActorSpawnParameters spawnParams;
@@ -350,6 +362,12 @@ void APlayerCharacter::SetCurrentLoadout()
 				_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 				_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 				_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+
+				//If player had a berry from previous selection. attach it here
+				if(_PlayerHasBerry)
+				{
+					_SpawnedCharacterTool->AttachBerry();
+				}
 			}
 			break;
 		case 1:
@@ -419,7 +437,11 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 		if (Journal)
 		{
 			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
-			animal->OnAnimalPhotographed.Broadcast();
+			if(!animal->_BeenPhotographed)
+			{
+				animal->OnAnimalPhotographed.Broadcast();
+			}
+			animal->_BeenPhotographed = true;
 			
 			if (ScreenshotTexture)
 			{
@@ -529,6 +551,12 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 					
 					// Setting animal as "photographable" 
 					IInteract::Execute_interact(OverlappingActors[i]);
+
+					//Checking if the scannable creature can be fed
+					if(_PlayerHasBerry)
+					{
+						FeedBerry();
+					}
 				}
 				
 				//Not berry or inventory item but still interactable?
@@ -548,6 +576,7 @@ void APlayerCharacter::Pickup_Berry()
 
 void APlayerCharacter::GrappleStart()
 {
+	_PlayerHasBerry = false;
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
 	ReleaseAim();
