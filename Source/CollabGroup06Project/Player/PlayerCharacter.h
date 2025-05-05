@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void UpdateUI(FString animalType, ACreature_Base* creatureBase, UUserWidget* screenshotInstance);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void TutorialJournalPopup();
+
 	/* ------------------------------- */
 	/* ------------------------------- */
 	/* ---- Grapple Functions -------- */
@@ -68,6 +71,12 @@ public:
 
 	virtual void Sprint_Implementation(const FInputActionValue& Instance) override;
 	virtual void SprintComplete_Implementation(const FInputActionValue& Instance) override;
+
+	UFUNCTION()
+	void AddGrappleCrosshair();
+	
+	UFUNCTION()
+	void RemoveGrappleCrosshair();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void SprintStart();
@@ -89,6 +98,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	bool _IsAiming;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Journal)
+	bool _HasJournalOpen;
 	
 	UFUNCTION()
 	void Pickup_Berry();
@@ -136,6 +147,12 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void HideHelpPanel();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void FeedBerry();
+
+	UFUNCTION(BlueprintCallable, Category = "GrappleGun")
+	void RemoveBerryFromGrapple();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool _RequiredItemFound;
@@ -227,7 +244,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool _IsGrappling;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool _PlayerHasBerry;
+
+	//Camera border UI
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> GrappleCrosshairWidget;
 	
+	UUserWidget* GrappleCrosshairInstance;
+
 	/* ------------------------------- */
 	/* ------ Scan Components -------- */
 	/* ------------------------------- */
