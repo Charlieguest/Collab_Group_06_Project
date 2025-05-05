@@ -44,6 +44,10 @@ void ACharacterTool_Base::RemoveBerry_Implementation()
 	IBerryRemovable::RemoveBerry_Implementation();
 }
 
+void ACharacterTool_Base::AttachBerry()
+{
+}
+
 void ACharacterTool_Base::BeginPlay()
 {
 	Super::BeginPlay();
