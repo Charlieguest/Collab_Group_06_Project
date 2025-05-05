@@ -18,8 +18,9 @@ public:
 	// Sets default values for this actor's properties
 	AGaseousPlant();
 	UPROPERTY(EditAnywhere, Category="Timer") float _timer = 1.0f;
-	UPROPERTY(EditAnywhere, Category="Position Override") bool XYOverride = true;
-	UPROPERTY(EditAnywhere, Category="Position Override") bool ZOverride = true;
+	UPROPERTY(EditAnywhere, Category = "Player forces") float _velocity = 800;
+	UPROPERTY(EditAnywhere, Category="Player forces") bool XYOverride = true;
+	UPROPERTY(EditAnywhere, Category="Player forces") bool ZOverride = true;
 	
 	bool TimerStarted = false;
 protected:
