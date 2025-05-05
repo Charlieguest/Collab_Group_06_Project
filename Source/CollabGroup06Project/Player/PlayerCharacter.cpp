@@ -71,19 +71,29 @@ void APlayerCharacter::BeginPlay()
 		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
+	//Setting up crosshair widget on the c++ side
+	if (GrappleCrosshairWidget != nullptr)
+	{
+		GrappleCrosshairInstance = CreateWidget<UUserWidget>(GetWorld(), GrappleCrosshairWidget);
+		GrappleCrosshairInstance->AddToViewport();
+		GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
 	AActor* currentTool = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	
+
+	//Binding initial spawned grapple gun events 
 	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
 	_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
-	 
+	_SpawnedCharacterTool->OnAddCrossHair.AddDynamic(this, &APlayerCharacter::AddGrappleCrosshair);
+	_SpawnedCharacterTool->OnRemoveCrossHair.AddDynamic(this, &APlayerCharacter::RemoveGrappleCrosshair);
 }
 
 void APlayerCharacter::UpdateLoadout_Implementation(int previousIndex)
@@ -104,6 +114,7 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 			{
 				IBerryAquireable::Execute_PickupBerry(OtherActor);
 				_SpawnedGrappleGun->AttachBerry();
+				_PlayerHasBerry = true;
 			}
 		}
 	}
@@ -152,7 +163,6 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 				AddControllerYawInput(AxisValue.X);
 			}
 		}
-	
 }
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
@@ -165,7 +175,6 @@ void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Instance)
 {
-	HideHelpPanel();
 	if (UIJournalInstance->GetVisibility() == ESlateVisibility::Visible)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
@@ -180,9 +189,11 @@ void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Ins
 			PC->SetInputMode(InputMode);
 		}
 			
+		AimStop();
+		_HasJournalOpen = false;
 		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	else
+	else if(!_IsAiming)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PC)
@@ -196,14 +207,15 @@ void APlayerCharacter::ToggleJournal_Implementation(const FInputActionValue& Ins
 
 			PC->SetInputMode(InputMode);
 		}
-			
+		AimStart();
+		_HasJournalOpen = true;
 		UIJournalInstance->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
 void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) && !_HasJournalOpen)
 	{
 		_IsAiming = true;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
@@ -214,7 +226,7 @@ void APlayerCharacter::Aim_Implementation(const FInputActionValue& Instance)
 
 void APlayerCharacter::AimReleased_Implementation(const FInputActionValue& Instance)
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()) )
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UHeldItemInteractable::StaticClass()))
 	{
 		_IsAiming = false;
 		IHeldItemInteractable::Execute_ToggleCamera(_SpawnedCharacterTool, this);
@@ -245,6 +257,18 @@ void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& In
 	}
 }
 
+void APlayerCharacter::AddGrappleCrosshair()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Visible);
+}
+
+void APlayerCharacter::RemoveGrappleCrosshair()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void APlayerCharacter::AimStart_Implementation()
 {
 }
@@ -261,6 +285,14 @@ void APlayerCharacter::AimStop_Implementation()
 {
 }
 
+void APlayerCharacter::TutorialJournalPopup_Implementation()
+{
+}
+
+void APlayerCharacter::FeedBerry_Implementation()
+{
+}
+
 void APlayerCharacter::ReleaseAim()
 {
 	_IsAiming = false;
@@ -268,6 +300,16 @@ void APlayerCharacter::ReleaseAim()
 	_CameraSpringArmComponent->TargetArmLength =_CameraArmLengthDef;
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
+
+
+void APlayerCharacter::RemoveBerryFromGrapple()
+{
+	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UBerryRemovable::StaticClass()))
+	{
+		IBerryRemovable::Execute_RemoveBerry(_SpawnedCharacterTool);
+	}
+}
+
 
 void APlayerCharacter::ReleasePlayer()
 {
@@ -326,10 +368,8 @@ void APlayerCharacter::LoadoutSwitchRight_Implementation(const FInputActionValue
 
 void APlayerCharacter::SetCurrentLoadout()
 {
-	if(UKismetSystemLibrary::DoesImplementInterface(_SpawnedCharacterTool, UBerryRemovable::StaticClass()))
-	{
-		IBerryRemovable::Execute_RemoveBerry(_SpawnedCharacterTool);
-	}
+	//Removing berry if grapple gun is selected
+	RemoveBerryFromGrapple();
 	_SpawnedCharacterTool->Destroy();
 
 	FActorSpawnParameters spawnParams;
@@ -348,6 +388,14 @@ void APlayerCharacter::SetCurrentLoadout()
 				_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 				_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 				_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+				_SpawnedCharacterTool->OnAddCrossHair.AddDynamic(this, &APlayerCharacter::AddGrappleCrosshair);
+				_SpawnedCharacterTool->OnRemoveCrossHair.AddDynamic(this, &APlayerCharacter::RemoveGrappleCrosshair);
+
+				//If player had a berry from previous selection. attach it here
+				if(_PlayerHasBerry)
+				{
+					_SpawnedCharacterTool->AttachBerry();
+				}
 			}
 			break;
 		case 1:
@@ -417,7 +465,11 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 		if (Journal)
 		{
 			UTexture2D* ScreenshotTexture = LoadScreenshotAsTexture();
-			animal->OnAnimalPhotographed.Broadcast();
+			if(!animal->_BeenPhotographed)
+			{
+				animal->OnAnimalPhotographed.Broadcast();
+			}
+			animal->_BeenPhotographed = true;
 			
 			if (ScreenshotTexture)
 			{
@@ -436,6 +488,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 				if (animalType == TEXT("Snail"))
 				{
 					Journal->SetImage(Journal->Snail, Journal->SnailSticker, ScreenshotTexture);
+					TutorialJournalPopup();
 				}
 				if (animalType == TEXT("BerryBird"))
 				{
@@ -524,14 +577,15 @@ void APlayerCharacter::Interact_Implementation(const FInputActionValue& Instance
 				if(OverlappingActors[i]->ActorHasTag("Scannable"))
 				{
 					ACreature_Base* Creature = Cast<ACreature_Base>(OverlappingActors[i]);
-					SearchInventory(*Creature->_RequiredItemName, true);
+					
+					// Setting animal as "photographable" 
+					IInteract::Execute_interact(OverlappingActors[i]);
 
-					if(_RequiredItemFound)
+					//Checking if the scannable creature can be fed
+					if(_PlayerHasBerry)
 					{
-						// Setting animal as "photographable" 
-						IInteract::Execute_interact(OverlappingActors[i]);
+						FeedBerry();
 					}
-					continue;
 				}
 				
 				//Not berry or inventory item but still interactable?
@@ -551,6 +605,7 @@ void APlayerCharacter::Pickup_Berry()
 
 void APlayerCharacter::GrappleStart()
 {
+	_PlayerHasBerry = false;
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
 	ReleaseAim();
