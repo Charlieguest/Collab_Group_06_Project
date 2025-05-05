@@ -71,19 +71,29 @@ void APlayerCharacter::BeginPlay()
 		UIJournalInstance->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
+	//Setting up crosshair widget on the c++ side
+	if (GrappleCrosshairWidget != nullptr)
+	{
+		GrappleCrosshairInstance = CreateWidget<UUserWidget>(GetWorld(), GrappleCrosshairWidget);
+		GrappleCrosshairInstance->AddToViewport();
+		GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = this;
 
 	AActor* currentTool = GetWorld()->SpawnActor(_GrappleGun, &_GrappleAttachPoint->GetComponentTransform(), spawnParams);
 	currentTool->AttachToComponent(_GrappleAttachPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	
+
+	//Binding initial spawned grapple gun events 
 	_SpawnedCharacterTool = Cast<ACharacterTool_Base>(currentTool);
 	_SpawnedCharacterTool->OnGrappleStart.AddDynamic(this, &APlayerCharacter::GrappleStart);
 	_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 	_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 	_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
-	 
+	_SpawnedCharacterTool->OnAddCrossHair.AddDynamic(this, &APlayerCharacter::AddGrappleCrosshair);
+	_SpawnedCharacterTool->OnRemoveCrossHair.AddDynamic(this, &APlayerCharacter::RemoveGrappleCrosshair);
 }
 
 void APlayerCharacter::UpdateLoadout_Implementation(int previousIndex)
@@ -153,7 +163,6 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Instance)
 				AddControllerYawInput(AxisValue.X);
 			}
 		}
-	
 }
 
 void APlayerCharacter::Jump_Implementation(const FInputActionValue& Instance)
@@ -248,6 +257,18 @@ void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& In
 	}
 }
 
+void APlayerCharacter::AddGrappleCrosshair()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Visible);
+}
+
+void APlayerCharacter::RemoveGrappleCrosshair()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void APlayerCharacter::AimStart_Implementation()
 {
 }
@@ -264,6 +285,14 @@ void APlayerCharacter::AimStop_Implementation()
 {
 }
 
+void APlayerCharacter::TutorialJournalPopup_Implementation()
+{
+}
+
+void APlayerCharacter::FeedBerry_Implementation()
+{
+}
+
 void APlayerCharacter::ReleaseAim()
 {
 	_IsAiming = false;
@@ -272,9 +301,6 @@ void APlayerCharacter::ReleaseAim()
 	_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 }
 
-void APlayerCharacter::FeedBerry_Implementation()
-{
-}
 
 void APlayerCharacter::RemoveBerryFromGrapple()
 {
@@ -362,6 +388,8 @@ void APlayerCharacter::SetCurrentLoadout()
 				_SpawnedCharacterTool->OnGrappleDuring.AddDynamic(this, &APlayerCharacter::GrappleDuring);
 				_SpawnedCharacterTool->OnGrappleEnd.AddDynamic(this, &APlayerCharacter::GrappleEnd);
 				_SpawnedCharacterTool->OnGrappleBerry.AddDynamic(this, &APlayerCharacter::ReleaseAim);
+				_SpawnedCharacterTool->OnAddCrossHair.AddDynamic(this, &APlayerCharacter::AddGrappleCrosshair);
+				_SpawnedCharacterTool->OnRemoveCrossHair.AddDynamic(this, &APlayerCharacter::RemoveGrappleCrosshair);
 
 				//If player had a berry from previous selection. attach it here
 				if(_PlayerHasBerry)
@@ -460,6 +488,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 				if (animalType == TEXT("Snail"))
 				{
 					Journal->SetImage(Journal->Snail, Journal->SnailSticker, ScreenshotTexture);
+					TutorialJournalPopup();
 				}
 				if (animalType == TEXT("BerryBird"))
 				{

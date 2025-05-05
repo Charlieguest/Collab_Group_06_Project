@@ -100,6 +100,7 @@ void ACharacterTool_GrappleGun::Grapple_Aim_Implementation(APlayerCharacter* pla
 		FVector CurrentLocation = player->_CameraSpringArmComponent->GetRelativeLocation();
 		player->_CameraSpringArmComponent->TargetArmLength = player->_CameraArmLengthCam;
 		player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+		OnAddCrossHair.Broadcast();
 	}
 }
 
@@ -108,6 +109,7 @@ void ACharacterTool_GrappleGun::Grapple_Aim_Released_Implementation(APlayerChara
 	FVector CurrentLocation = FVector(0.0f, 0.0f, 0.0f);
 	player->_CameraSpringArmComponent->TargetArmLength = player->_CameraArmLengthDef;
 	player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
+	OnRemoveCrossHair.Broadcast();
 }
 
 void ACharacterTool_GrappleGun::RemoveBerry_Implementation()
@@ -130,6 +132,7 @@ void ACharacterTool_GrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AA
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(OtherActor->GetActorLocation());
 		_Cable->SetVisibility(true);
 		OnGrappleBerry.Broadcast();
+		OnRemoveCrossHair.Broadcast();
 		_BerryGrappleTimerDelegate.BindUFunction(this, FName("GrappleBerry"), BerryPickup);
 		GetWorld()->GetTimerManager().SetTimer(_BerryGrappleTimer, _BerryGrappleTimerDelegate, 0.05f, false);
 	}
@@ -138,6 +141,7 @@ void ACharacterTool_GrappleGun::OnProjectileHit(UPrimitiveComponent* HitComp, AA
 		_IsGrapplingPlayer = true;
 		
 		OnGrappleStart.Broadcast();
+		OnRemoveCrossHair.Broadcast();
 		_ProjectileHitLoc = Hit.ImpactPoint;
 		_Cable->EndLocation = GetActorTransform().InverseTransformPosition(_ProjectileHitLoc);
 		_Cable->SetVisibility(true);
