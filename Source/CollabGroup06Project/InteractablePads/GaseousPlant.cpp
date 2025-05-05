@@ -51,11 +51,12 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 {
 	if (isActive)
 	{
+		XYOverride = true;
 		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 		if (OtherCharacter != nullptr)
 		{
 
-			OtherCharacter->LaunchCharacter(FVector(0,0,100), XYOverride, ZOverride);
+			OtherCharacter->LaunchCharacter(FVector(0,0,_velocity), XYOverride, ZOverride);
 			OtherCharacter->GetCharacterMovement()->GravityScale = -0.50;
 			OtherCharacter->GetVelocity().Set(0,0,100.0);
 		}
@@ -65,13 +66,11 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 
 void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (isActive)
+	XYOverride = false;
+	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
+	if (OtherCharacter != nullptr)
 	{
-		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
-		if (OtherCharacter != nullptr)
-		{
-			OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
-		}
+		OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
 	}
 	
 }
