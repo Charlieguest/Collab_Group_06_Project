@@ -20,6 +20,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRelasePlayerSignature);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCameraAimSignature, bool, isHoldingCamera);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAddCrossHairSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRemoveCrossHairSignature);
+
 
 UCLASS()
 class COLLABGROUP06PROJECT_API ACharacterTool_Base : public AActor, public IHeldItemInteractable, public IFireable, public IBerryRemovable
@@ -44,6 +47,8 @@ public:
 	virtual void Scan_Implementation(APlayerCharacter* player) override;
 
 	virtual void RemoveBerry_Implementation() override;
+
+	virtual void AttachBerry();
 	
 	FAnimalPhotoTaken OnSuccessfulAnimalPhotoTaken;
 
@@ -55,6 +60,10 @@ public:
 	FRelasePlayerSignature OnReleasePlayer;
 	
 	FCameraAimSignature OnHoldingCamera;
+
+	FAddCrossHairSignature OnAddCrossHair;
+
+	FRemoveCrossHairSignature OnRemoveCrossHair;
 	
 protected:
 	virtual void BeginPlay() override;
