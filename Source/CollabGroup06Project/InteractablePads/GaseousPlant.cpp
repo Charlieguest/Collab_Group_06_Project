@@ -18,6 +18,7 @@ void AGaseousPlant::BeginPlay()
 {
 	Super::BeginPlay();
 	isActive = false;
+	TimerStarted = false;
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapBeginBox);
 	_CollisionComp->OnComponentEndOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapEndBox);
@@ -26,6 +27,11 @@ void AGaseousPlant::BeginPlay()
 void AGaseousPlant::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (_timer <= 0.0f)
+	{
+		TimerStarted = false;
+	}
 	if (isActive)
 	{
 		if (!TimerStarted)
@@ -37,7 +43,8 @@ void AGaseousPlant::Tick(float DeltaTime)
 			}
 			if (GetWorld())
 			{
-				GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
+				GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::ActiveSwitches, _timer, false);
+				/*GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::TimerActiveSwitch, _timer, false);*/
 				
 			}
 		}
@@ -73,6 +80,22 @@ void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, c
 		OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
 	}
 	
+}
+
+void AGaseousPlant::ActiveSwitches()
+{
+	AGaseousPlant::PadActive_Implementation();
+	switch (TimerStarted)
+	{
+	case true:
+		TimerStarted = false;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Stopped");
+		break;
+	case false:
+		TimerStarted = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Started");
+		break;
+	}
 }
 
 
