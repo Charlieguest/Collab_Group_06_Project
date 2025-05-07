@@ -46,14 +46,10 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		}
  */
 
-	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry )
+	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
 	{
 		OnRemoveBerry.Broadcast();
 		
-		IPadInteractable::Execute_PadActive(OtherActor);
-	}
-	if (UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & OtherActor->ActorHasTag(TEXT("GasPlant")))
-	{
 		IPadInteractable::Execute_PadActive(OtherActor);
 	}
 	
