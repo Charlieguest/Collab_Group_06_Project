@@ -18,6 +18,7 @@ void AGaseousPlant::BeginPlay()
 {
 	Super::BeginPlay();
 	isActive = false;
+	TimerStarted = false;
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapBeginBox);
 	_CollisionComp->OnComponentEndOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapEndBox);
@@ -26,6 +27,11 @@ void AGaseousPlant::BeginPlay()
 void AGaseousPlant::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (_timer <= 0.0f)
+	{
+		TimerStarted = false;
+	}
 	if (isActive)
 	{
 		if (!TimerStarted)
@@ -37,7 +43,8 @@ void AGaseousPlant::Tick(float DeltaTime)
 			}
 			if (GetWorld())
 			{
-				GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::PadActive_Implementation, _timer, false);
+				GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::ActiveSwitches, _timer, false);
+				/*GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::TimerActiveSwitch, _timer, false);*/
 				
 			}
 		}
@@ -51,11 +58,12 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 {
 	if (isActive)
 	{
+		XYOverride = true;
 		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 		if (OtherCharacter != nullptr)
 		{
 
-			OtherCharacter->LaunchCharacter(FVector(0,0,100), XYOverride, ZOverride);
+			OtherCharacter->LaunchCharacter(FVector(0,0,_velocity), XYOverride, ZOverride);
 			OtherCharacter->GetCharacterMovement()->GravityScale = -0.50;
 			OtherCharacter->GetVelocity().Set(0,0,100.0);
 		}
@@ -65,15 +73,29 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 
 void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (isActive)
+	XYOverride = false;
+	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
+	if (OtherCharacter != nullptr)
 	{
-		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
-		if (OtherCharacter != nullptr)
-		{
-			OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
-		}
+		OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
 	}
 	
+}
+
+void AGaseousPlant::ActiveSwitches()
+{
+	AGaseousPlant::PadActive_Implementation();
+	switch (TimerStarted)
+	{
+	case true:
+		TimerStarted = false;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Stopped");
+		break;
+	case false:
+		TimerStarted = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Started");
+		break;
+	}
 }
 
 
