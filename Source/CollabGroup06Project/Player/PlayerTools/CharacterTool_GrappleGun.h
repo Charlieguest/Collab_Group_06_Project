@@ -67,7 +67,7 @@ public:
 	bool _HasFired;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float _ProjectileSpeed = 10000.0f;
+	float _ProjectileSpeed = 15000.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float _MaxFireDistance = 1000.0f;
