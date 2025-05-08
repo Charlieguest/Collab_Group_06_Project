@@ -58,21 +58,20 @@ void APlayerCharController::Handle_MatchStarted_Implementation()
 	UWorld* const world = GetWorld();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
 
-	AActor* tempStart = UGameplayStatics::GetGameMode(world)->FindPlayerStart(this);
-	FVector spawnLocation = _PlayerSpawnLoc;
+	AActor* PlayerStart = UGameplayStatics::GetGameMode(world)->FindPlayerStart(this);
+	
 	FRotator spawnRotation = FRotator(0.0f, _PlayerSpawnRotY, 0.0f);
 
 	FActorSpawnParameters SpawnParameters;
-	_PlayerPawn = world->SpawnActor<APawn>(_PawnToSpawn, spawnLocation, spawnRotation, SpawnParameters);
+	_PlayerPawn = world->SpawnActor<APawn>(_PawnToSpawn, FVector(0.0f, 0.0f, 0.0f), spawnRotation, SpawnParameters);
 	Possess(_PlayerPawn);
 	
 	if(APlayerCharacter* castedPawn = Cast<APlayerCharacter>(_PlayerPawn))
 	{
 		//TODO: Bind to any relevant events
 		castedPawn->Init();
-		
+		castedPawn->SetActorLocation(PlayerStart->GetActorLocation());
 		this->SetViewTarget(castedPawn);
-		//castedPawn->SetActorLocation(FVector(0.0f, 0.0f, 10.0f));
 	}
 	
 	IMatchStateHandler::Handle_MatchStarted_Implementation();

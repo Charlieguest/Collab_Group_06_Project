@@ -57,7 +57,11 @@ void ACustomGameMode::DecreaseCountdown()
 void ACustomGameMode::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
-	GetWorld()->GetTimerManager().SetTimer(_TimerDecreaseCountdown, this, &ACustomGameMode::DecreaseCountdown, 1.f, false);
+
+	//Removing Countdown in this project instance
+	//GetWorld()->GetTimerManager().SetTimer(_TimerDecreaseCountdown, this, &ACustomGameMode::DecreaseCountdown, 1.f, false);
+
+	StartMatch();
 }
 
 void ACustomGameMode::HandleMatchHasStarted()
