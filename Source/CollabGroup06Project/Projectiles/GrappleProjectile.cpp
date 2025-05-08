@@ -52,6 +52,11 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		
 		IPadInteractable::Execute_PadActive(OtherActor);
 	}
+	if (UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & OtherActor->ActorHasTag(TEXT("NoBerry")))
+
+	{
+		IPadInteractable::Execute_PadActive(OtherActor);
+	}
 	
 	CollisionComp->SetSimulatePhysics(false);
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
