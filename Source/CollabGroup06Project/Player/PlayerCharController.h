@@ -61,9 +61,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<APawn> _PlayerPawn;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector _PlayerSpawnLoc;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float _PlayerSpawnRotY;
