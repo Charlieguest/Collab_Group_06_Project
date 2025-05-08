@@ -259,13 +259,13 @@ void APlayerCharacter::SprintComplete_Implementation(const FInputActionValue& In
 
 void APlayerCharacter::AddGrappleCrosshair()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	_SpawnedCharacterTool->AttachToComponent(_CameraSpringArmComponent,  FAttachmentTransformRules::SnapToTargetIncludingScale);
 	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Visible);
 }
 
 void APlayerCharacter::RemoveGrappleCrosshair()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+	_SpawnedCharacterTool->AttachToComponent(_GrappleAttachPoint,  FAttachmentTransformRules::SnapToTargetIncludingScale);
 	GrappleCrosshairInstance->SetVisibility(ESlateVisibility::Hidden);
 }
 
