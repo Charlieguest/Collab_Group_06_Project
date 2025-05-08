@@ -61,8 +61,13 @@ bool ACharacterTool_GrappleGun::Fire_Implementation(FVector Forward)
 
 	GetWorld()->GetTimerManager().SetTimer(_InitialProjectileTimerHandle, this, &ACharacterTool_GrappleGun::InitialProjectileTimer, 0.1f, false);
 	
+	//FHitResult Hit;
+	//bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, TraceEnd, ECC_Visibility, Params);
+
 	//Applying Force
 	_GrappleProjectile->CollisionComp->AddImpulse(Forward * _ProjectileSpeed);
+
+
 
 	_HasFired = true;
 	return true;
@@ -97,7 +102,7 @@ void ACharacterTool_GrappleGun::Grapple_Aim_Implementation(APlayerCharacter* pla
 {
 	if(!_IsGrapplingPlayer && !_IsGrapplingBerry)
 	{
-		FVector CurrentLocation = player->_CameraSpringArmComponent->GetRelativeLocation();
+		FVector CurrentLocation = FVector(0.0f, 0.0f, 60.0f);
 		player->_CameraSpringArmComponent->TargetArmLength = player->_CameraArmLengthCam;
 		player->_CameraSpringArmComponent->SetRelativeLocation(CurrentLocation);
 		OnAddCrossHair.Broadcast();
