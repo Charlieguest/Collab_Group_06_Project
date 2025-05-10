@@ -24,6 +24,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> _CollisionComponent;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SpawnBerryReplacement();
 	
 	FOnBerryPickedup _OnPickedUp;
 	
