@@ -23,7 +23,13 @@ void ABerryPickup::PulltoPlayerPos(FVector playerPos)
 void ABerryPickup::PickupBerry_Implementation()
 {
 	IBerryAquireable::PickupBerry_Implementation();
+	SpawnBerryReplacement();
 	Destroy();
+}
+
+void ABerryPickup::SpawnBerryReplacement_Implementation()
+{
+	
 }
 
 void ABerryPickup::BeginPlay()
