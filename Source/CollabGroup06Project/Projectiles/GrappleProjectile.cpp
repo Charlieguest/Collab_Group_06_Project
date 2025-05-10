@@ -46,7 +46,7 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		}
  */
 
-	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
+	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry & !OtherActor->ActorHasTag(TEXT("NoBerry")))
 	{
 		OnRemoveBerry.Broadcast();
 		

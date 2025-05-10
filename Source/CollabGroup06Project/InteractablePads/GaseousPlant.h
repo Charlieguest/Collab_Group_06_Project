@@ -17,12 +17,11 @@ class COLLABGROUP06PROJECT_API AGaseousPlant : public AInteractPad_Base
 public:	
 	// Sets default values for this actor's properties
 	AGaseousPlant();
-	UPROPERTY(EditAnywhere, Category="Timer") float _timer = 1.0f;
-	UPROPERTY(EditAnywhere, Category = "Player forces") float _velocity = 800;
-	UPROPERTY(EditAnywhere, Category="Player forces") bool XYOverride = true;
-	UPROPERTY(EditAnywhere, Category="Player forces") bool ZOverride = true;
-	
-	bool TimerStarted = false;
+	UPROPERTY(EditInstanceOnly, Category="Timer") float _timer = 1.0f;
+	UPROPERTY(EditInstanceOnly, Category = "Player forces") float _velocity = 800;
+	UPROPERTY(EditInstanceOnly, Category="Player forces") bool XYOverride = true;
+	UPROPERTY(EditInstanceOnly, Category="Player forces") bool ZOverride = true;
+	UPROPERTY(EditInstanceOnly, Category = "Player forces") bool TimerStarted = false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

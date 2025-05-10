@@ -23,7 +23,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(EditAnywhere, Category="Collider Object") TObjectPtr<UBoxComponent> _CollisionComp;;
+	/*UPROPERTY(EditAnywhere, Category="Collider Object") TObjectPtr<UBoxComponent> _CollisionComp;;*/
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Launch Velocity") int32 M_LaunchVelocity = 750;
 	//Positional overrides for the launching of the character

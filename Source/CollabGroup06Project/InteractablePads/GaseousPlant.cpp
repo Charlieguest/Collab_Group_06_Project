@@ -17,7 +17,7 @@ AGaseousPlant::AGaseousPlant()
 void AGaseousPlant::BeginPlay()
 {
 	Super::BeginPlay();
-	isActive = false;
+	/*isActive = false;*/
 	TimerStarted = false;
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapBeginBox);

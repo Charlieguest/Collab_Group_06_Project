@@ -19,8 +19,9 @@ public:
 
 	// Sets default values for this actor's properties
 	AInteractPad_Base();
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Active state")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Config")
 	bool isActive = true;
+	UPROPERTY(EditInstanceOnly, Category = "Config")
 	TObjectPtr<UBoxComponent> _CollisionComp;
 	TObjectPtr<UArrowComponent> _ArrowComp;
 protected:
