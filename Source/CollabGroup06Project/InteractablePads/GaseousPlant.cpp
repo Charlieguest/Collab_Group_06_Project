@@ -30,7 +30,7 @@ void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActo
 {
 
 	
-	if (isActive)
+	if (IsGaseousActive)
 	{
 		XYOverride = true;
 		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
