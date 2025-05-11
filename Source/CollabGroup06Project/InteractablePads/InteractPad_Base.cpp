@@ -1,23 +1,32 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "InteractPad_Base.h"
 
-// Sets default values
+#include "Components/SphereComponent.h"
+
 AInteractPad_Base::AInteractPad_Base()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	_AssetRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Asset Root"));
+	_AssetRoot->SetupAttachment(RootComponent);
 
+	_AssetCollisionPivot = CreateDefaultSubobject<USceneComponent>(TEXT("Asset Collision Pivot"));
+	_AssetCollisionPivot->SetupAttachment(_AssetRoot);
+	
+	_CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Player Collider"));
+	_CollisionComp->SetupAttachment(_AssetCollisionPivot);
+
+	_ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow Component"));
+	_ArrowComp->SetupAttachment(_AssetRoot);
+
+	_GrappleCollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("Grapple Collision"));
+	_GrappleCollisionComp->SetupAttachment(_AssetRoot);
+	_GrappleCollisionComp->InitSphereRadius(6.0f);
+	_GrappleCollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 }
 
-// Called when the game starts or when spawned
 void AInteractPad_Base::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
-
 
 void AInteractPad_Base::PadActive_Implementation()
 {
@@ -31,11 +40,24 @@ void AInteractPad_Base::PadActive_Implementation()
 		isActive = true;
 		break;
 	}
+	
+	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works %s"), isActive ? TEXT("TRUE") : TEXT("FALSE")));
+}
+
+void AInteractPad_Base::CompletePlantAction_Implementation()
+{
+	//Complete Blueprint Functionality
+}
+
+void AInteractPad_Base::PlantActionEnd_Implementation()
+{
+	//End Plant Blueprint Functionality
 }
 
 void AInteractPad_Base::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	
 }
 
 void AInteractPad_Base::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
