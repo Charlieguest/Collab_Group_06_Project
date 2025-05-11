@@ -20,6 +20,7 @@ void ADirectionalLaunchPad::BeginPlay()
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
 	_ArrowComp = GetComponentByClass<UArrowComponent>();
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ADirectionalLaunchPad::ADirectionalLaunchPad::OnOverlapBeginBox);
+	_CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 }
 
 // Called every frame
@@ -31,6 +32,7 @@ void ADirectionalLaunchPad::Tick(float DeltaTime)
 
 void ADirectionalLaunchPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	CompletePlantAction();
 	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 	if (OtherCharacter != nullptr)
 	{
