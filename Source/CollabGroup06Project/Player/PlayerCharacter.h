@@ -128,6 +128,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CAMERA_ZOOM_DAMPEN)
 	USpringArmComponent* _CameraSpringArmComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PLAYER_INTERACTION_ZONE)
 	TObjectPtr<USphereComponent> _InteractionZoneSphereComponent;
 
 	FVector _InteractZoneOffset = FVector(450.0f, 0.0f, -10.0f);
