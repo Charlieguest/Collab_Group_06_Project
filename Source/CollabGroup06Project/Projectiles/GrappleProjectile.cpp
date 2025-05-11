@@ -1,6 +1,7 @@
 ﻿#include "GrappleProjectile.h"
 
 #include "../InteractablePads/InteractPad_Base.h"
+#include "Chaos/ChaosPerfTest.h"
 #include "CollabGroup06Project/Pickups/BerryPickup.h"
 #include "CollabGroup06Project/Player/PlayerTools/PlayerBerry.h"
 #include "Components/ArrowComponent.h"
@@ -45,11 +46,18 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 			Destroy();
 		}
  */
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "This");
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("%s"), *OtherActor->GetName()));
 
-	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry)
+	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry & !OtherActor->ActorHasTag(TEXT("NoBerry")))
 	{
 		OnRemoveBerry.Broadcast();
 		
+		IPadInteractable::Execute_PadActive(OtherActor);
+	}
+	if (UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & OtherActor->ActorHasTag(TEXT("NoBerry")))
+	{
 		IPadInteractable::Execute_PadActive(OtherActor);
 	}
 	
@@ -58,7 +66,6 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 
 
 }
-
 
 void AGrappleProjectile::AttachBerryProjectile()
 {
