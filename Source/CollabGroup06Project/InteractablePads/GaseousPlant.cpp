@@ -1,62 +1,36 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GaseousPlant.h"
 
+#include "CollabGroup06Project/Projectiles/GrappleProjectile.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// Sets default values
 AGaseousPlant::AGaseousPlant()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+
+	_GrappleCollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	//_GrappleCollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::OnGrappleOverlapBegin);
+	//_GrappleCollisionComp->OnComponentEndOverlap.AddDynamic(this, &AGaseousPlant::OnGrappleOverlapEnd);
+
 }
 
-// Called when the game starts or when spawned
 void AGaseousPlant::BeginPlay()
 {
 	Super::BeginPlay();
 	isActive = false;
 	TimerStarted = false;
 	_CollisionComp = GetComponentByClass<UBoxComponent>();
+	_CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	_CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapBeginBox);
 	_CollisionComp->OnComponentEndOverlap.AddDynamic(this, &AGaseousPlant::AGaseousPlant::OnOverlapEndBox);
 }
 
-void AGaseousPlant::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (_timer <= 0.0f)
-	{
-		TimerStarted = false;
-	}
-	if (isActive)
-	{
-		if (!TimerStarted)
-		{
-			TimerStarted = true;
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer started");
-			}
-			if (GetWorld())
-			{
-				GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::ActiveSwitches, _timer, false);
-				/*GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::TimerActiveSwitch, _timer, false);*/
-				
-			}
-		}
-	}
-	
-}
-
-// Called every frame
 void AGaseousPlant::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (isActive)
+
+	
+	if (IsGaseousActive)
 	{
 		XYOverride = true;
 		ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
@@ -82,20 +56,24 @@ void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, c
 	
 }
 
+void AGaseousPlant::PadActive_Implementation()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "sTART Chain");
+	if(!IsGaseousActive)
+ 	{
+		CompletePlantAction();
+
+		
+ 		GetWorld()->GetTimerManager().SetTimer(_TimerHandle, this, &AGaseousPlant::ActiveSwitches, _timer, false);
+		IsGaseousActive = true;
+ 	}
+}
+
 void AGaseousPlant::ActiveSwitches()
 {
-	AGaseousPlant::PadActive_Implementation();
-	switch (TimerStarted)
-	{
-	case true:
-		TimerStarted = false;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Stopped");
-		break;
-	case false:
-		TimerStarted = true;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "Timer Started");
-		break;
-	}
+	PlantActionEnd();
+
+	IsGaseousActive = false;
 }
 
 
