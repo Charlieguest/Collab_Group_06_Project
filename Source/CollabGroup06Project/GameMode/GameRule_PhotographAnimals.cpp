@@ -39,7 +39,7 @@ void UGameRule_PhotographAnimals::Handle_Photographed()
 {
 	_CreaturesRemaining--;
 
-	if(_CreaturesRemaining == 0)
+	if(_CreaturesRemaining == 1)
 	{
 		BroadcastGameRuleComplete();
 	}
