@@ -36,6 +36,9 @@ protected:
 	virtual bool ReadyToStartMatch_Implementation() override;
 	virtual bool ReadyToEndMatch_Implementation() override;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SendToLevelComplete();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=MatchManagement)
 	int _CountDownTimer = 3;
 
