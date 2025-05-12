@@ -127,6 +127,7 @@ void ACustomGameMode::Handle_GameRuleCompleted(UGameRule* rule)
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Emerald,
 FString::Printf(TEXT("GAME COMPLETE")));
 	EndMatch();
+	SendToLevelComplete();
 }
 
 void ACustomGameMode::PostLogin(APlayerController* NewPlayer)
@@ -153,4 +154,8 @@ bool ACustomGameMode::ReadyToStartMatch_Implementation()
 bool ACustomGameMode::ReadyToEndMatch_Implementation()
 {
 	return false;
+}
+
+void ACustomGameMode::SendToLevelComplete_Implementation()
+{
 }
