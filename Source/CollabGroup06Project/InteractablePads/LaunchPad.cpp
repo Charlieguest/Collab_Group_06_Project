@@ -46,7 +46,6 @@ void ALaunchPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedComp, AActor* 
 		{
 			OtherCharacter->LaunchCharacter(FVector(0,0,M_LaunchVelocity), XYOverride, ZOverride);
 		}
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.f, FColor::Red, *FString::Printf(TEXT("On Component Overlap Begin!")));
 	}
 }
 

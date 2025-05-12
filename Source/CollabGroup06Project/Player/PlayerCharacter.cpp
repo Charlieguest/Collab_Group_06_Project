@@ -459,7 +459,7 @@ void APlayerCharacter::UpdateUI(FString animalType, ACreature_Base* animal, UUse
 
 	if (UIJournalInstance && animal->_IsPhotographable)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works")));
 		UE_LOG(LogTemp, Warning, TEXT("Screenshot widget exists"));
 		UUI_Journal* Journal = Cast<UUI_Journal>(UIJournalInstance);
 		if (Journal)

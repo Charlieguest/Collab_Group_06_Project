@@ -58,7 +58,6 @@ void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, c
 
 void AGaseousPlant::PadActive_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "sTART Chain");
 	if(!IsGaseousActive)
  	{
 		CompletePlantAction();

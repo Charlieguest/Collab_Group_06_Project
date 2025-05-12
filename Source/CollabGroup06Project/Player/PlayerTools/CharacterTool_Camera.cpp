@@ -93,18 +93,18 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 	
 	for (const FHitResult& Hit : HitResults)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Purple, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Purple, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
 
 		if (Hit.GetActor())
 		{
 			if (!Hit.GetActor()->WasRecentlyRendered()) continue;
 			if (!Hit.GetActor()->ActorHasTag("Scannable")) continue;
 			
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
+			//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Actor in view: %s"), *Hit.GetActor()->GetName()));
 
 			//Need reference to the animals photograph status
 			ACreature_Base* animal = Cast<ACreature_Base>(Hit.GetActor());
-			GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
+			//->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Photo stat: %hhd"), animal->_IsPhotographable));
 
 			FString Tag;
 		
@@ -143,7 +143,7 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 			else
 			{
 				Tag = "Error : Creature Tag not set";
-				GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
+				//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Error : Creature Tag not set")));
 			}
 
 			_UpdateUIDelayDelegate.BindUFunction(this, FName("UpdateUIOnPlayer"), Tag, animal);
@@ -153,7 +153,7 @@ bool ACharacterTool_Camera::IsAnythingInCameraView(UWorld* world, APlayerCharact
 		}
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
+	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, FString::Printf(TEXT("Nothing in view")));
 	UE_LOG(LogTemp, Warning, TEXT("Nothing in view"));
 
 	return false;

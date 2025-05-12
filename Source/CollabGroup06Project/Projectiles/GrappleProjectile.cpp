@@ -46,9 +46,9 @@ void AGrappleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 			Destroy();
 		}
  */
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "This");
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, "This");
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("%s"), *OtherActor->GetName()));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("%s"), *OtherActor->GetName()));
 
 	if(UKismetSystemLibrary::DoesImplementInterface(OtherActor, UPadInteractable::StaticClass()) & _ProjectileHasBerry & !OtherActor->ActorHasTag(TEXT("NoBerry")))
 	{

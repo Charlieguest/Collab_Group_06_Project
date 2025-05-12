@@ -56,7 +56,7 @@ void APlayerCharController::Init_Implementation()
 void APlayerCharController::Handle_MatchStarted_Implementation()
 {
 	UWorld* const world = GetWorld();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f,FColor::Black, FString::Printf(TEXT("Player Created")));
 
 	AActor* PlayerStart = UGameplayStatics::GetGameMode(world)->FindPlayerStart(this);
 	

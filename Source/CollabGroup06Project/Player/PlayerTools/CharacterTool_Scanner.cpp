@@ -11,7 +11,7 @@ ACharacterTool_Scanner::ACharacterTool_Scanner()
 
 void ACharacterTool_Scanner::Scan_Implementation(APlayerCharacter* player)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("SCANNING")));
+	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("SCANNING")));
 	
 	if(!player->_IsScanning &&
 		!player->_HasFired  /*&&

@@ -40,8 +40,6 @@ void AInteractPad_Base::PadActive_Implementation()
 		isActive = true;
 		break;
 	}
-	
-	//GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Red, FString::Printf(TEXT("Works %s"), isActive ? TEXT("TRUE") : TEXT("FALSE")));
 }
 
 void AInteractPad_Base::CompletePlantAction_Implementation()

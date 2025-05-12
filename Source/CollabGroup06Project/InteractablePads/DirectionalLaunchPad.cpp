@@ -39,6 +39,5 @@ void ADirectionalLaunchPad::OnOverlapBeginBox(UPrimitiveComponent* OverlappedCom
 		FVector LaunchVelocity = _ArrowComp->GetForwardVector() * M_LaunchVelocity;
 		OtherCharacter->LaunchCharacter(FVector(LaunchVelocity) , XYOverride, ZOverride);
 	}
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.f, FColor::Red, *FString::Printf(TEXT("On Component Overlap Begin!")));
 }
 
