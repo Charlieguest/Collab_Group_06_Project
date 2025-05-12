@@ -34,7 +34,6 @@ void ACustomGameMode::BeginPlay()
 			if(!rule->_IsOptional)
 			{
 				_GameRulesLeft++;
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Rule Count: %d"), _GameRulesLeft));
 			}
 		}
 	}
@@ -112,8 +111,6 @@ void ACustomGameMode::OnMatchStateSet()
 	{
 		output = "Leaving Map";
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, FString::Printf(TEXT("State Changed to: %s"), *output));
 }
 
 void ACustomGameMode::Handle_GameRuleCompleted(UGameRule* rule)
@@ -123,10 +120,9 @@ void ACustomGameMode::Handle_GameRuleCompleted(UGameRule* rule)
 	_GameRulesLeft--;
 	
 	if(_GameRulesLeft != 0) { return; }
-
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Emerald,
-FString::Printf(TEXT("GAME COMPLETE")));
+	
 	EndMatch();
+	SendToLevelComplete();
 }
 
 void ACustomGameMode::PostLogin(APlayerController* NewPlayer)
@@ -153,4 +149,8 @@ bool ACustomGameMode::ReadyToStartMatch_Implementation()
 bool ACustomGameMode::ReadyToEndMatch_Implementation()
 {
 	return false;
+}
+
+void ACustomGameMode::SendToLevelComplete_Implementation()
+{
 }
