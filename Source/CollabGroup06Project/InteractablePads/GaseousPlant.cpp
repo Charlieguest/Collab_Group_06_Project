@@ -51,7 +51,7 @@ void AGaseousPlant::OnOverlapEndBox(class UPrimitiveComponent* OverlappedComp, c
 	ACharacter* OtherCharacter = Cast<ACharacter>(OtherActor);
 	if (OtherCharacter != nullptr)
 	{
-		OtherCharacter->GetCharacterMovement()->GravityScale = 1.75;
+		OtherCharacter->GetCharacterMovement()->GravityScale = 1.0f;
 	}
 	
 }
