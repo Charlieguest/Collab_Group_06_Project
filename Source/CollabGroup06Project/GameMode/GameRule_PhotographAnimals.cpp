@@ -23,9 +23,6 @@ void UGameRule_PhotographAnimals::Init()
 
 	_CreaturesRemaining = _Creatures.Num();
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black,
-	FString::Printf(TEXT("GameRule_PhotographAnimals: Found %d Creatures in world"), _CreaturesRemaining));
-
 	for(ACreature_Base* creature : _Creatures)
 	{
 		//Bind to relevant events
@@ -45,7 +42,5 @@ void UGameRule_PhotographAnimals::Handle_Photographed()
 	if(_CreaturesRemaining == 0)
 	{
 		BroadcastGameRuleComplete();
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Black,
-FString::Printf(TEXT("No more Creatures left in world to photograph")));
 	}
 }
